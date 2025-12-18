@@ -30,7 +30,7 @@ export default function DepartmentPayslipsPage() {
 
     try {
       const response = await fetch(
-        "http://localhost:3000/payroll-tracking/payslips/bydepartment",
+        "http://localhost:5000/payroll-tracking/payslips/bydepartment",
         {
           method: "POST",
           headers: {

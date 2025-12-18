@@ -12,11 +12,10 @@ import {
 interface Dispute {
   _id: string;
   disputeId: string;
-  employeeId:
-  {
-     _id: string;        
-     employeeNumber: string; 
-    };
+  employeeId: {
+    _id: string;
+    employeeNumber: string;
+  };
   payslipId: string;
   description: string;
   status: string;
@@ -67,7 +66,7 @@ const DisputesSpecialistPage: React.FC = () => {
   useEffect(() => {
     (async () => {
       try {
-        const me = await fetch("http://localhost:3000/auth/me", {
+        const me = await fetch("http://localhost:5000/auth/me", {
           credentials: "include",
         });
         if (!me.ok) {
@@ -78,7 +77,10 @@ const DisputesSpecialistPage: React.FC = () => {
         const u = await me.json();
         setCurrentUser(u);
 
-        if (!Array.isArray(u.roles) || !u.roles.includes("Payroll Specialist")) {
+        if (
+          !Array.isArray(u.roles) ||
+          !u.roles.includes("Payroll Specialist")
+        ) {
           setError("Forbidden: requires Payroll Specialist role");
           setLoading(false);
           return;
@@ -95,7 +97,7 @@ const DisputesSpecialistPage: React.FC = () => {
   const fetchDisputes = async () => {
     try {
       const endpoint =
-        "http://localhost:3000/payroll-tracking/disputes/for-specialist-review";
+        "http://localhost:5000/payroll-tracking/disputes/for-specialist-review";
       const response = await fetch(endpoint, { credentials: "include" });
       if (!response.ok) throw new Error("Failed to fetch disputes");
       const data = await response.json();
@@ -114,7 +116,7 @@ const DisputesSpecialistPage: React.FC = () => {
       setProcessingId(dispute._id);
 
       const response = await fetch(
-        `http://localhost:3000/payroll-tracking/dispute/${dispute._id}/specialist-approve`,
+        `http://localhost:5000/payroll-tracking/dispute/${dispute._id}/specialist-approve`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -151,7 +153,7 @@ const DisputesSpecialistPage: React.FC = () => {
       setProcessingId(dispute._id);
 
       const response = await fetch(
-        `http://localhost:3000/payroll-tracking/dispute/${dispute._id}/specialist-reject`,
+        `http://localhost:5000/payroll-tracking/dispute/${dispute._id}/specialist-reject`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -214,9 +216,10 @@ const DisputesSpecialistPage: React.FC = () => {
   };
 
   const getPendingDisputes = () =>
-    disputes.filter((d) =>
-      (d.status || "").toLowerCase().includes("pending") ||
-      (d.status || "").toLowerCase().includes("review")
+    disputes.filter(
+      (d) =>
+        (d.status || "").toLowerCase().includes("pending") ||
+        (d.status || "").toLowerCase().includes("review")
     );
 
   /* =====================
@@ -274,7 +277,9 @@ const DisputesSpecialistPage: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
             <p className="text-sm text-gray-600 mb-1">Total Disputes</p>
-            <p className="text-3xl font-bold text-gray-900">{disputes.length}</p>
+            <p className="text-3xl font-bold text-gray-900">
+              {disputes.length}
+            </p>
           </div>
           <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-yellow-500">
             <p className="text-sm text-gray-600 mb-1">Pending Review</p>
@@ -285,7 +290,10 @@ const DisputesSpecialistPage: React.FC = () => {
           <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
             <p className="text-sm text-gray-600 mb-1">Approved</p>
             <p className="text-3xl font-bold text-green-600">
-              {disputes.filter((d) => d.status.toUpperCase() === "APPROVED").length}
+              {
+                disputes.filter((d) => d.status.toUpperCase() === "APPROVED")
+                  .length
+              }
             </p>
           </div>
         </div>
@@ -295,51 +303,80 @@ const DisputesSpecialistPage: React.FC = () => {
           {pendingDisputes.length === 0 ? (
             <div className="bg-white rounded-lg shadow-md p-12 text-center">
               <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">No Disputes to Review</h3>
-              <p className="text-gray-600">All disputes have been processed or are awaiting submission.</p>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                No Disputes to Review
+              </h3>
+              <p className="text-gray-600">
+                All disputes have been processed or are awaiting submission.
+              </p>
             </div>
           ) : (
             pendingDisputes.map((dispute) => (
-              <div key={dispute._id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+              <div
+                key={dispute._id}
+                className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
+              >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-3">
                       {getStatusIcon(dispute.status)}
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(dispute.status)}`}>
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
+                          dispute.status
+                        )}`}
+                      >
                         {dispute.status}
                       </span>
-                      <span className="text-sm text-gray-500">ID: {dispute.disputeId}</span>
+                      <span className="text-sm text-gray-500">
+                        ID: {dispute.disputeId}
+                      </span>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 text-sm">
                       <div>
                         <p className="text-gray-600">Employee ID</p>
-                        <p className="font-semibold text-gray-900">{getEmployeeDisplayId(dispute.employeeId)}</p>
+                        <p className="font-semibold text-gray-900">
+                          {getEmployeeDisplayId(dispute.employeeId)}
+                        </p>
                       </div>
                       <div>
                         <p className="text-gray-600">Payslip ID</p>
-                        <p className="font-semibold text-gray-900">{getId(dispute.payslipId)}</p>
+                        <p className="font-semibold text-gray-900">
+                          {getId(dispute.payslipId)}
+                        </p>
                       </div>
                       <div>
                         <p className="text-gray-600">Submitted</p>
-                        <p className="font-semibold text-gray-900">{new Date(dispute.createdAt).toLocaleDateString()}</p>
+                        <p className="font-semibold text-gray-900">
+                          {new Date(dispute.createdAt).toLocaleDateString()}
+                        </p>
                       </div>
                     </div>
 
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Dispute Description</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      Dispute Description
+                    </h3>
                     <p className="text-gray-700 mb-4">{dispute.description}</p>
 
                     {dispute.rejectionReason && (
                       <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-4 rounded">
-                        <p className="text-sm font-semibold text-red-800 mb-1">Rejection Reason:</p>
-                        <p className="text-sm text-red-700">{dispute.rejectionReason}</p>
+                        <p className="text-sm font-semibold text-red-800 mb-1">
+                          Rejection Reason:
+                        </p>
+                        <p className="text-sm text-red-700">
+                          {dispute.rejectionReason}
+                        </p>
                       </div>
                     )}
 
                     {dispute.resolutionComment && (
                       <div className="bg-green-50 border-l-4 border-green-400 p-4 mb-4 rounded">
-                        <p className="text-sm font-semibold text-green-800 mb-1">Resolution Comment:</p>
-                        <p className="text-sm text-green-700">{dispute.resolutionComment}</p>
+                        <p className="text-sm font-semibold text-green-800 mb-1">
+                          Resolution Comment:
+                        </p>
+                        <p className="text-sm text-green-700">
+                          {dispute.resolutionComment}
+                        </p>
                       </div>
                     )}
                   </div>
@@ -380,7 +417,9 @@ const DisputesSpecialistPage: React.FC = () => {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-screen overflow-y-auto">
               <div className="bg-green-600 px-6 py-4 flex items-center justify-between rounded-t-lg">
-                <h2 className="text-xl font-semibold text-white">Approve Dispute</h2>
+                <h2 className="text-xl font-semibold text-white">
+                  Approve Dispute
+                </h2>
                 <button
                   onClick={() => {
                     setShowApprovalModal(false);
@@ -395,11 +434,15 @@ const DisputesSpecialistPage: React.FC = () => {
               <div className="p-6">
                 <div className="bg-blue-50 p-4 rounded-lg mb-6">
                   <p className="text-sm text-gray-600 mb-1">Dispute ID</p>
-                  <p className="font-semibold text-gray-900">{selectedDispute.disputeId}</p>
+                  <p className="font-semibold text-gray-900">
+                    {selectedDispute.disputeId}
+                  </p>
                 </div>
 
                 <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Comments</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Comments
+                  </label>
                   <textarea
                     value={approvalComments}
                     onChange={(e) => setApprovalComments(e.target.value)}
@@ -415,7 +458,9 @@ const DisputesSpecialistPage: React.FC = () => {
                     disabled={processingId === selectedDispute._id}
                     className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
                   >
-                    {processingId === selectedDispute._id ? "Processing..." : "Confirm Approval"}
+                    {processingId === selectedDispute._id
+                      ? "Processing..."
+                      : "Confirm Approval"}
                   </button>
                   <button
                     onClick={() => {
@@ -437,7 +482,9 @@ const DisputesSpecialistPage: React.FC = () => {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-screen overflow-y-auto">
               <div className="bg-red-600 px-6 py-4 flex items-center justify-between rounded-t-lg">
-                <h2 className="text-xl font-semibold text-white">Reject Dispute</h2>
+                <h2 className="text-xl font-semibold text-white">
+                  Reject Dispute
+                </h2>
                 <button
                   onClick={() => {
                     setShowRejectionModal(false);
@@ -452,11 +499,15 @@ const DisputesSpecialistPage: React.FC = () => {
               <div className="p-6">
                 <div className="bg-red-50 p-4 rounded-lg mb-6">
                   <p className="text-sm text-gray-600 mb-1">Dispute ID</p>
-                  <p className="font-semibold text-gray-900">{selectedDispute.disputeId}</p>
+                  <p className="font-semibold text-gray-900">
+                    {selectedDispute.disputeId}
+                  </p>
                 </div>
 
                 <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Rejection Reason <span className="text-red-500">*</span></label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Rejection Reason <span className="text-red-500">*</span>
+                  </label>
                   <textarea
                     value={rejectionReason}
                     onChange={(e) => setRejectionReason(e.target.value)}
@@ -467,7 +518,9 @@ const DisputesSpecialistPage: React.FC = () => {
                 </div>
 
                 <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Additional Comments</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Additional Comments
+                  </label>
                   <textarea
                     value={approvalComments}
                     onChange={(e) => setApprovalComments(e.target.value)}
@@ -483,7 +536,9 @@ const DisputesSpecialistPage: React.FC = () => {
                     disabled={processingId === selectedDispute._id}
                     className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
                   >
-                    {processingId === selectedDispute._id ? "Processing..." : "Confirm Rejection"}
+                    {processingId === selectedDispute._id
+                      ? "Processing..."
+                      : "Confirm Rejection"}
                   </button>
                   <button
                     onClick={() => {

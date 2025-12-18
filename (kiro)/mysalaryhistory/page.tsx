@@ -28,7 +28,7 @@ const SalaryHistoryPage: React.FC = () => {
     try {
       setLoading(true);
       const response = await fetch(
-        "http://localhost:3000/payroll-tracking/my-payslip",
+        "http://localhost:5000/payroll-tracking/my-payslip",
         {
           method: "GET",
           headers: {

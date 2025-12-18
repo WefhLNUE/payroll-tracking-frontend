@@ -24,46 +24,43 @@ const FinanceReportsPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<any | null>(null);
 
-    useEffect(() => {
-      (async () => {
-        try {
-          const me = await fetch("http://localhost:3000/auth/me", {
-            credentials: "include",
-          });
-  
-          if (!me.ok) {
-            setError("Unauthorized");
-            setLoading(false);
-            return;
-          }
-  
-          const u = await me.json();
-          setCurrentUser(u);
-  
-          if (!Array.isArray(u.roles) || !u.roles.includes("Finance Staff")) {
-            setError("Forbidden: requires Finance Staff role");
-            setLoading(false);
-            return;
-          }
-  
-        fetchReports();
-    
+  useEffect(() => {
+    (async () => {
+      try {
+        const me = await fetch("http://localhost:5000/auth/me", {
+          credentials: "include",
+        });
 
-        } catch (e: any) {
-          setError(e?.message || "Error fetching claims");
-        } finally {
+        if (!me.ok) {
+          setError("Unauthorized");
           setLoading(false);
+          return;
         }
-      })();
-    }, [year]);
- 
+
+        const u = await me.json();
+        setCurrentUser(u);
+
+        if (!Array.isArray(u.roles) || !u.roles.includes("Finance Staff")) {
+          setError("Forbidden: requires Finance Staff role");
+          setLoading(false);
+          return;
+        }
+
+        fetchReports();
+      } catch (e: any) {
+        setError(e?.message || "Error fetching claims");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [year]);
 
   const fetchReports = async () => {
     try {
       setLoading(true);
       setError(null);
       const response = await fetch(
-        `http://localhost:3000/payroll-tracking/finance-report/${year}`
+        `http://localhost:5000/payroll-tracking/finance-report/${year}`
       );
 
       if (!response.ok) {
@@ -112,7 +109,7 @@ const FinanceReportsPage: React.FC = () => {
     );
   }
 
-   if (error) {
+  if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
         <div className="text-center bg-white p-8 rounded-lg shadow">
@@ -160,9 +157,7 @@ const FinanceReportsPage: React.FC = () => {
         {/* Error Message */}
         {error && (
           <div className="mb-6 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-lg">
-            <p className="text-yellow-700">
-              ⚠️ API Error: {error}
-            </p>
+            <p className="text-yellow-700">⚠️ API Error: {error}</p>
           </div>
         )}
 
@@ -187,7 +182,10 @@ const FinanceReportsPage: React.FC = () => {
               {reports.length > 0 && reports[0].numberOfEmployees > 0
                 ? (
                     calculateTotalCompensation() /
-                    reports.reduce((sum, r) => sum + (r.numberOfEmployees || 0), 0)
+                    reports.reduce(
+                      (sum, r) => sum + (r.numberOfEmployees || 0),
+                      0
+                    )
                   ).toFixed(2)
                 : "0.00"}
             </p>
@@ -221,7 +219,9 @@ const FinanceReportsPage: React.FC = () => {
                   {/* Taxes */}
                   <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-lg p-6 border-l-4 border-red-500">
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-semibold text-gray-900">Total Taxes</h3>
+                      <h3 className="font-semibold text-gray-900">
+                        Total Taxes
+                      </h3>
                       <DollarSign className="w-5 h-5 text-red-600" />
                     </div>
                     <p className="text-3xl font-bold text-red-600 mb-1">
@@ -229,7 +229,8 @@ const FinanceReportsPage: React.FC = () => {
                     </p>
                     <p className="text-sm text-gray-600">
                       {(
-                        ((report.totalTaxes || 0) / calculateTotalCompensation()) *
+                        ((report.totalTaxes || 0) /
+                          calculateTotalCompensation()) *
                         100
                       ).toFixed(1)}
                       % of total
@@ -249,7 +250,8 @@ const FinanceReportsPage: React.FC = () => {
                     </p>
                     <p className="text-sm text-gray-600">
                       {(
-                        ((report.totalInsurance || 0) / calculateTotalCompensation()) *
+                        ((report.totalInsurance || 0) /
+                          calculateTotalCompensation()) *
                         100
                       ).toFixed(1)}
                       % of total
@@ -269,7 +271,8 @@ const FinanceReportsPage: React.FC = () => {
                     </p>
                     <p className="text-sm text-gray-600">
                       {(
-                        ((report.totalBenefits || 0) / calculateTotalCompensation()) *
+                        ((report.totalBenefits || 0) /
+                          calculateTotalCompensation()) *
                         100
                       ).toFixed(1)}
                       % of total
@@ -289,7 +292,8 @@ const FinanceReportsPage: React.FC = () => {
                     </p>
                     <p className="text-sm text-gray-600">
                       {(
-                        ((report.totalAllowances || 0) / calculateTotalCompensation()) *
+                        ((report.totalAllowances || 0) /
+                          calculateTotalCompensation()) *
                         100
                       ).toFixed(1)}
                       % of total
@@ -309,7 +313,8 @@ const FinanceReportsPage: React.FC = () => {
                     </p>
                     <p className="text-sm text-gray-600">
                       {(
-                        ((report.totalBonuses || 0) / calculateTotalCompensation()) *
+                        ((report.totalBonuses || 0) /
+                          calculateTotalCompensation()) *
                         100
                       ).toFixed(1)}
                       % of total
@@ -327,9 +332,7 @@ const FinanceReportsPage: React.FC = () => {
                     <p className="text-3xl font-bold text-indigo-600 mb-1">
                       {report.numberOfEmployees || 0}
                     </p>
-                    <p className="text-sm text-gray-600">
-                      Active employees
-                    </p>
+                    <p className="text-sm text-gray-600">Active employees</p>
                   </div>
                 </div>
 

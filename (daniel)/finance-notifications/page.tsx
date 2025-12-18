@@ -25,8 +25,8 @@ interface Notification {
   title: string;
   description: string;
 
-  recordId: string;          // Mongo _id (internal)
-  recordDisplayId: string;   // DISP-0001 / CLAIM-0001
+  recordId: string; // Mongo _id (internal)
+  recordDisplayId: string; // DISP-0001 / CLAIM-0001
 
   amount?: number;
 
@@ -55,17 +55,17 @@ const getEmployeeDisplayId = (employee: any): string => {
 
 const FinanceNotifications: React.FC = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
-    const [currentUser, setCurrentUser] = useState<any | null>(null);
+  const [currentUser, setCurrentUser] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<
     "all" | "dispute_approved" | "claim_approved" | "unread"
   >("all");
 
   const [error, setError] = useState<string | null>(null);
-   useEffect(() => {
+  useEffect(() => {
     (async () => {
       try {
-        const me = await fetch("http://localhost:3000/auth/me", {
+        const me = await fetch("http://localhost:5000/auth/me", {
           credentials: "include",
         });
         if (!me.ok) {
@@ -84,7 +84,7 @@ const FinanceNotifications: React.FC = () => {
 
         await fetchNotifications();
         const interval = setInterval(fetchNotifications, 30000);
-    return () => clearInterval(interval);
+        return () => clearInterval(interval);
       } catch (e: any) {
         setError(e?.message || "Error fetching user");
         setLoading(false);
@@ -92,23 +92,22 @@ const FinanceNotifications: React.FC = () => {
     })();
   }, []);
 
-
   const fetchNotifications = async () => {
     try {
       setLoading(true);
 
       const approvedRes = await fetch(
-        "http://localhost:3000/payroll-tracking/finance/approved-records",
+        "http://localhost:5000/payroll-tracking/finance/approved-records",
         { credentials: "include" }
       );
 
       const disputesRes = await fetch(
-        "http://localhost:3000/payroll-tracking/disputes/for-manager-approval",
+        "http://localhost:5000/payroll-tracking/disputes/for-manager-approval",
         { credentials: "include" }
       );
 
       const claimsRes = await fetch(
-        "http://localhost:3000/payroll-tracking/claims/for-manager-approval",
+        "http://localhost:5000/payroll-tracking/claims/for-manager-approval",
         { credentials: "include" }
       );
 
@@ -152,13 +151,9 @@ const FinanceNotifications: React.FC = () => {
         });
       });
 
-   
-     
-
       notificationsList.sort(
         (a, b) =>
-          new Date(b.createdAt).getTime() -
-          new Date(a.createdAt).getTime()
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
 
       setNotifications(notificationsList);
@@ -188,7 +183,7 @@ const FinanceNotifications: React.FC = () => {
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-    if (error) {
+  if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
         <div className="text-center bg-white p-8 rounded-lg shadow">
@@ -200,7 +195,6 @@ const FinanceNotifications: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 py-10 px-4">
       <div className="max-w-4xl mx-auto">
-
         {/* Header */}
         <div className="flex items-center justify-between mb-10">
           <div>
@@ -239,8 +233,7 @@ const FinanceNotifications: React.FC = () => {
                   relative rounded-xl border-l-4 p-6 shadow-sm transition
                   ${n.read ? "bg-white border-gray-300" : ""}
                   ${
-                    n.type === "dispute_approved" ||
-                    n.type === "claim_approved"
+                    n.type === "dispute_approved" || n.type === "claim_approved"
                       ? "bg-green-50 border-green-500"
                       : "bg-yellow-50 border-yellow-500"
                   }
@@ -305,9 +298,9 @@ const FinanceNotifications: React.FC = () => {
                       <Link
                         href={`/refunds?type=${
                           n.type === "dispute_approved" ? "dispute" : "claim"
-                        }&recordId=${encodeURIComponent(
-                          n.recordId
-                        )}&amount=${n.amount ?? ""}`}
+                        }&recordId=${encodeURIComponent(n.recordId)}&amount=${
+                          n.amount ?? ""
+                        }`}
                         className="inline-flex items-center rounded-md bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700"
                       >
                         Create Refund

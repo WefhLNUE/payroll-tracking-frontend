@@ -16,11 +16,10 @@ interface Refund {
   _id: string;
   type: "dispute" | "claim";
   recordId: string;
-    employeeId:
-  {
-     _id: string;        
-     employeeNumber: string; 
-    };
+  employeeId: {
+    _id: string;
+    employeeNumber: string;
+  };
   refundAmount: number;
   status: string;
   description?: string;
@@ -82,9 +81,9 @@ const getId = (value: any): string => {
 const RefundsPage: React.FC = () => {
   const [refunds, setRefunds] = useState<Refund[]>([]);
   const [approvedRecords, setApprovedRecords] = useState<{
-  disputes: any[];
-  claims: any[];
-}>({ disputes: [], claims: [] });
+    disputes: any[];
+    claims: any[];
+  }>({ disputes: [], claims: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -92,13 +91,13 @@ const RefundsPage: React.FC = () => {
   const [selectedRefund, setSelectedRefund] = useState<Refund | null>(null);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<any | null>(null);
-  
+
   // Filter states
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterType, setFilterType] = useState<string>("all");
   const [filterMinAmount, setFilterMinAmount] = useState<string>("");
   const [filterMaxAmount, setFilterMaxAmount] = useState<string>("");
-const searchParams = useSearchParams();
+  const searchParams = useSearchParams();
 
   // Form states
   const [refundType, setRefundType] = useState<"dispute" | "claim">("dispute");
@@ -106,10 +105,10 @@ const searchParams = useSearchParams();
   const [refundAmount, setRefundAmount] = useState("");
   const [description, setDescription] = useState("");
   const [payrollRunId, setPayrollRunId] = useState("");
- useEffect(() => {
+  useEffect(() => {
     (async () => {
       try {
-        const me = await fetch("http://localhost:3000/auth/me", {
+        const me = await fetch("http://localhost:5000/auth/me", {
           credentials: "include",
         });
         if (!me.ok) {
@@ -128,70 +127,70 @@ const searchParams = useSearchParams();
 
         await fetchRefunds();
         await fetchApprovedRecords();
-
       } catch (e: any) {
         setError(e?.message || "Error fetching user");
         setLoading(false);
       }
     })();
   }, []);
-useEffect(() => {
-  const type = searchParams.get("type");
-  const recordIdParam = searchParams.get("recordId");
-  const amount = searchParams.get("amount");
+  useEffect(() => {
+    const type = searchParams.get("type");
+    const recordIdParam = searchParams.get("recordId");
+    const amount = searchParams.get("amount");
 
-  if (type && recordIdParam) {
-    setRefundType(type as "dispute" | "claim");
-    setRecordId(recordIdParam);
+    if (type && recordIdParam) {
+      setRefundType(type as "dispute" | "claim");
+      setRecordId(recordIdParam);
 
-    if (amount) {
-      setRefundAmount(amount);
+      if (amount) {
+        setRefundAmount(amount);
+      }
+
+      setShowCreateModal(true);
     }
+  }, [searchParams]);
+  const fetchApprovedRecords = async () => {
+    try {
+      const res = await fetch(
+        "http://localhost:5000/payroll-tracking/finance/approved-records",
+        { credentials: "include" }
+      );
 
-    setShowCreateModal(true);
-  }
-}, [searchParams]);
-const fetchApprovedRecords = async () => {
-  try {
-    const res = await fetch(
-      "http://localhost:3000/payroll-tracking/finance/approved-records",
-      { credentials: "include" }
-    );
+      if (!res.ok) throw new Error("Failed to fetch approved records");
 
-    if (!res.ok) throw new Error("Failed to fetch approved records");
-
-    const data = await res.json();
-    setApprovedRecords({
-      disputes: data.disputes || [],
-      claims: data.claims || [],
-    });
-  } catch (err) {
-    console.error("Approved records fetch error", err);
-  }
-};
+      const data = await res.json();
+      setApprovedRecords({
+        disputes: data.disputes || [],
+        claims: data.claims || [],
+      });
+    } catch (err) {
+      console.error("Approved records fetch error", err);
+    }
+  };
 
   const fetchRefunds = async () => {
     try {
       setLoading(true);
       setError(null);
       const response = await fetch(
-        "http://localhost:3000/payroll-tracking/refunds",
-        { credentials: 'include' }
+        "http://localhost:5000/payroll-tracking/refunds",
+        { credentials: "include" }
       );
 
       if (!response.ok) {
         throw new Error("Failed to fetch refunds");
       }
 
- const data = await response.json();
+      const data = await response.json();
 
-const normalized = (Array.isArray(data) ? data : []).map((r: any) => ({
-  ...r,
-  status: String(r.status).toUpperCase(),
-  refundAmount: r.refundDetails?.amount ?? 0, // ✅ keep old usage alive
-}));
+      const normalized = (Array.isArray(data) ? data : []).map((r: any) => ({
+        ...r,
+        status: String(r.status).toUpperCase(),
+        refundAmount: r.refundDetails?.amount ?? 0, // ✅ keep old usage alive
+      }));
 
-setRefunds(normalized); } catch (err) {
+      setRefunds(normalized);
+    } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
       setRefunds([]);
     } finally {
@@ -208,11 +207,11 @@ setRefunds(normalized); } catch (err) {
     try {
       setProcessingId("create");
       const response = await fetch(
-        "http://localhost:3000/payroll-tracking/refund/create",
+        "http://localhost:5000/payroll-tracking/refund/create",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          credentials: 'include',
+          credentials: "include",
           body: JSON.stringify({
             type: refundType,
             recordId: recordId,
@@ -251,11 +250,11 @@ setRefunds(normalized); } catch (err) {
     try {
       setProcessingId(selectedRefund._id);
       const response = await fetch(
-        `http://localhost:3000/payroll-tracking/refund/${selectedRefund._id}/mark-paid`,
+        `http://localhost:5000/payroll-tracking/refund/${selectedRefund._id}/mark-paid`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          credentials: 'include',
+          credentials: "include",
           body: JSON.stringify({
             payrollRunId: payrollRunId,
           }),
@@ -322,9 +321,18 @@ setRefunds(normalized); } catch (err) {
   const getFilteredRefunds = () => {
     return refunds.filter((refund) => {
       // derive type from backend fields (refund.type may be missing)
-      const actualType = (refund as any).type || ((refund as any).disputeId ? 'dispute' : (refund as any).claimId ? 'claim' : 'unknown');
+      const actualType =
+        (refund as any).type ||
+        ((refund as any).disputeId
+          ? "dispute"
+          : (refund as any).claimId
+          ? "claim"
+          : "unknown");
       // Filter by status
-      if (filterStatus !== "all" && refund.status.toUpperCase() !== filterStatus.toUpperCase()) {
+      if (
+        filterStatus !== "all" &&
+        refund.status.toUpperCase() !== filterStatus.toUpperCase()
+      ) {
         return false;
       }
 
@@ -347,13 +355,19 @@ setRefunds(normalized); } catch (err) {
   };
 
   const getTotalPendingAmount = () => {
-    return getPendingRefunds().reduce((sum, refund) => sum + ((refund as any).refundDetails?.amount || 0), 0);
+    return getPendingRefunds().reduce(
+      (sum, refund) => sum + ((refund as any).refundDetails?.amount || 0),
+      0
+    );
   };
 
   const getTotalPaidAmount = () => {
     return refunds
       .filter((r) => r.status.toUpperCase() === "PAID")
-      .reduce((sum, refund) => sum + ((refund as any).refundDetails?.amount || 0), 0);
+      .reduce(
+        (sum, refund) => sum + ((refund as any).refundDetails?.amount || 0),
+        0
+      );
   };
 
   if (loading) {
@@ -369,18 +383,16 @@ setRefunds(normalized); } catch (err) {
 
   const pendingRefunds = getPendingRefunds();
   const filteredRefunds = getFilteredRefunds();
-  
-  const refundedDisputeIds = new Set(
-  refunds
-    .filter((r: any) => r.disputeId?._id)
-    .map((r: any) => r.disputeId._id)
-);
 
-const refundedClaimIds = new Set(
-  refunds
-    .filter((r: any) => r.claimId?._id)
-    .map((r: any) => r.claimId._id)
-);
+  const refundedDisputeIds = new Set(
+    refunds
+      .filter((r: any) => r.disputeId?._id)
+      .map((r: any) => r.disputeId._id)
+  );
+
+  const refundedClaimIds = new Set(
+    refunds.filter((r: any) => r.claimId?._id).map((r: any) => r.claimId._id)
+  );
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
@@ -391,7 +403,6 @@ const refundedClaimIds = new Set(
     );
   }
   return (
-    
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
@@ -412,88 +423,88 @@ const refundedClaimIds = new Set(
             Create Refund
           </button>
         </div>
-{/* ✅ Approved Disputes & Claims Awaiting Refund */}
-<div className="bg-white rounded-lg shadow-md p-6 mt-10 mb-12">
-  <h3 className="text-xl font-semibold text-gray-900 mb-4">
-    Approved Disputes & Claims Awaiting Refund
-  </h3>
+        {/* ✅ Approved Disputes & Claims Awaiting Refund */}
+        <div className="bg-white rounded-lg shadow-md p-6 mt-10 mb-12">
+          <h3 className="text-xl font-semibold text-gray-900 mb-4">
+            Approved Disputes & Claims Awaiting Refund
+          </h3>
 
-  {approvedRecords.disputes.length === 0 &&
-   approvedRecords.claims.length === 0 ? (
-    <p className="text-gray-600">No approved records awaiting refund.</p>
-  ) : (
-    <div className="space-y-4">
-      {[
-  ...approvedRecords.disputes
-    .filter(d => !refundedDisputeIds.has(d._id))
-    .map(d => ({ ...d, _type: "dispute" })),
-
-  ...approvedRecords.claims
-    .filter(c => !refundedClaimIds.has(c._id))
-    .map(c => ({ ...c, _type: "claim" })),
-].map((record: any) => (
-        <div
-          key={record._id}
-          className="border rounded-lg p-4 flex justify-between items-start"
-        >
-          <div className="space-y-2">
-            <p className="font-semibold text-gray-900">
-              {record._type === "dispute" ? "Dispute" : "Claim"}:{" "}
-              {record.disputeId || record.claimId}
+          {approvedRecords.disputes.length === 0 &&
+          approvedRecords.claims.length === 0 ? (
+            <p className="text-gray-600">
+              No approved records awaiting refund.
             </p>
+          ) : (
+            <div className="space-y-4">
+              {[
+                ...approvedRecords.disputes
+                  .filter((d) => !refundedDisputeIds.has(d._id))
+                  .map((d) => ({ ...d, _type: "dispute" })),
 
-            <p className="text-sm text-gray-600">
-              Employee: {getEmployeeDisplayId(record.employeeId)}
-            </p>
+                ...approvedRecords.claims
+                  .filter((c) => !refundedClaimIds.has(c._id))
+                  .map((c) => ({ ...c, _type: "claim" })),
+              ].map((record: any) => (
+                <div
+                  key={record._id}
+                  className="border rounded-lg p-4 flex justify-between items-start"
+                >
+                  <div className="space-y-2">
+                    <p className="font-semibold text-gray-900">
+                      {record._type === "dispute" ? "Dispute" : "Claim"}:{" "}
+                      {record.disputeId || record.claimId}
+                    </p>
 
-            {/* ✅ Approved Refund Amount */}
-            {record._type === "claim" && (
-              <p className="text-sm font-semibold text-green-700">
-                Approved Amount: $
-                {(record.approvedAmount ?? record.amount)?.toFixed(2)}
-              </p>
-            )}
+                    <p className="text-sm text-gray-600">
+                      Employee: {getEmployeeDisplayId(record.employeeId)}
+                    </p>
 
-            {record._type === "dispute" && record.resolutionComment && (
-              <p className="text-sm font-semibold text-green-700">
-                Approved Refund (see note below)
-              </p>
-            )}
+                    {/* ✅ Approved Refund Amount */}
+                    {record._type === "claim" && (
+                      <p className="text-sm font-semibold text-green-700">
+                        Approved Amount: $
+                        {(record.approvedAmount ?? record.amount)?.toFixed(2)}
+                      </p>
+                    )}
 
-            {/* ✅ Manager Message */}
-            {record.resolutionComment && (
-              <div className="bg-gray-50 border-l-4 border-blue-400 p-3 rounded">
-                <p className="text-xs font-semibold text-gray-700 mb-1">
-                  Manager Comment
-                </p>
-                <p className="text-sm text-gray-600">
-                  {record.resolutionComment}
-                </p>
-              </div>
-            )}
-          </div>
+                    {record._type === "dispute" && record.resolutionComment && (
+                      <p className="text-sm font-semibold text-green-700">
+                        Approved Refund (see note below)
+                      </p>
+                    )}
 
-          <button
-            onClick={() => {
-              setRefundType(record._type);
-              setRecordId(record._id); // ✅ Mongo ID
-              setShowCreateModal(true);
-            }}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg h-fit"
-          >
-            Create Refund
-          </button>
+                    {/* ✅ Manager Message */}
+                    {record.resolutionComment && (
+                      <div className="bg-gray-50 border-l-4 border-blue-400 p-3 rounded">
+                        <p className="text-xs font-semibold text-gray-700 mb-1">
+                          Manager Comment
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          {record.resolutionComment}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      setRefundType(record._type);
+                      setRecordId(record._id); // ✅ Mongo ID
+                      setShowCreateModal(true);
+                    }}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg h-fit"
+                  >
+                    Create Refund
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-      ))}
-    </div>
-  )}
-</div>
         {/* Error Message */}
         {error && (
           <div className="mb-6 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-lg">
-            <p className="text-yellow-700">
-              ⚠️ API Error: {error}
-            </p>
+            <p className="text-yellow-700">⚠️ API Error: {error}</p>
           </div>
         )}
 
@@ -601,7 +612,9 @@ const refundedClaimIds = new Set(
             <div className="bg-white rounded-lg shadow-md p-12 text-center">
               <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                {refunds.length === 0 ? "No Refunds" : "No Refunds Match Filters"}
+                {refunds.length === 0
+                  ? "No Refunds"
+                  : "No Refunds Match Filters"}
               </h3>
               <p className="text-gray-600 mb-6">
                 {refunds.length === 0
@@ -620,7 +633,13 @@ const refundedClaimIds = new Set(
             </div>
           ) : (
             filteredRefunds.map((refund) => {
-              const actualType = (refund as any).type || ((refund as any).disputeId ? 'dispute' : (refund as any).claimId ? 'claim' : 'unknown');
+              const actualType =
+                (refund as any).type ||
+                ((refund as any).disputeId
+                  ? "dispute"
+                  : (refund as any).claimId
+                  ? "claim"
+                  : "unknown");
 
               return (
                 <div
@@ -639,7 +658,11 @@ const refundedClaimIds = new Set(
                           {refund.status}
                         </span>
                         <span className="text-sm text-gray-500">
-                          {actualType === 'dispute' ? 'Dispute Refund' : actualType === 'claim' ? 'Claim Refund' : 'Refund'}
+                          {actualType === "dispute"
+                            ? "Dispute Refund"
+                            : actualType === "claim"
+                            ? "Claim Refund"
+                            : "Refund"}
                         </span>
                       </div>
 
@@ -647,14 +670,14 @@ const refundedClaimIds = new Set(
                         <div>
                           <p className="text-gray-600">Record ID</p>
                           <p className="font-semibold text-gray-900">
-                           {getReadableId(refund)}
+                            {getReadableId(refund)}
                           </p>
                         </div>
                         <div>
                           <p className="text-gray-600">Employee ID</p>
                           <p className="font-semibold text-gray-900">
-                          {getEmployeeDisplayId(refund.employeeId)}
-                         </p>
+                            {getEmployeeDisplayId(refund.employeeId)}
+                          </p>
                         </div>
                         <div>
                           <p className="text-gray-600">Created</p>
@@ -672,7 +695,10 @@ const refundedClaimIds = new Set(
                               Refund Amount
                             </p>
                             <p className="text-3xl font-bold text-blue-600">
-                              ${(((refund as any).refundDetails?.amount) || 0).toFixed(2)}
+                              $
+                              {(
+                                (refund as any).refundDetails?.amount || 0
+                              ).toFixed(2)}
                             </p>
                           </div>
                           <DollarSign className="w-12 h-12 text-blue-400 opacity-50" />
@@ -703,7 +729,10 @@ const refundedClaimIds = new Set(
 
                       <div className="text-sm text-gray-600">
                         <p>
-                          Processed by: <span className="font-semibold">{getId(refund.financeStaffId)}</span>
+                          Processed by:{" "}
+                          <span className="font-semibold">
+                            {getId(refund.financeStaffId)}
+                          </span>
                         </p>
                       </div>
                     </div>
@@ -815,7 +844,9 @@ const refundedClaimIds = new Set(
                     disabled={processingId === "create"}
                     className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
                   >
-                    {processingId === "create" ? "Creating..." : "Create Refund"}
+                    {processingId === "create"
+                      ? "Creating..."
+                      : "Create Refund"}
                   </button>
                   <button
                     onClick={() => {
@@ -863,7 +894,13 @@ const refundedClaimIds = new Set(
                     <div>
                       <p className="text-sm text-gray-600 mb-1">Amount</p>
                       <p className="font-semibold text-gray-900">
-${((selectedRefund as any).refundDetails?.amount ?? selectedRefund.refundAmount ?? 0).toFixed(2)}                      </p>
+                        $
+                        {(
+                          (selectedRefund as any).refundDetails?.amount ??
+                          selectedRefund.refundAmount ??
+                          0
+                        ).toFixed(2)}{" "}
+                      </p>
                     </div>
                   </div>
                 </div>

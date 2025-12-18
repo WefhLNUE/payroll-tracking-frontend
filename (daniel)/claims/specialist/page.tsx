@@ -13,11 +13,10 @@ import {
 interface Claim {
   _id: string;
   claimId: string;
-  employeeId:
-  {
-     _id: string;        
-     employeeNumber: string; 
-    };
+  employeeId: {
+    _id: string;
+    employeeNumber: string;
+  };
   description: string;
   claimType: string;
   amount: number;
@@ -66,7 +65,7 @@ const ClaimsSpecialistPage: React.FC = () => {
   useEffect(() => {
     (async () => {
       try {
-        const me = await fetch("http://localhost:3000/auth/me", {
+        const me = await fetch("http://localhost:5000/auth/me", {
           credentials: "include",
         });
 
@@ -79,14 +78,17 @@ const ClaimsSpecialistPage: React.FC = () => {
         const u = await me.json();
         setCurrentUser(u);
 
-        if (!Array.isArray(u.roles) || !u.roles.includes("Payroll Specialist")) {
+        if (
+          !Array.isArray(u.roles) ||
+          !u.roles.includes("Payroll Specialist")
+        ) {
           setError("Forbidden: requires Payroll Specialist role");
           setLoading(false);
           return;
         }
 
         const res = await fetch(
-          "http://localhost:3000/payroll-tracking/claims/for-specialist-review",
+          "http://localhost:5000/payroll-tracking/claims/for-specialist-review",
           { credentials: "include" }
         );
 
@@ -114,7 +116,7 @@ const ClaimsSpecialistPage: React.FC = () => {
       setProcessingId(claim._id);
 
       const response = await fetch(
-        `http://localhost:3000/payroll-tracking/claim/${claim._id}/specialist-approve`,
+        `http://localhost:5000/payroll-tracking/claim/${claim._id}/specialist-approve`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -135,7 +137,7 @@ const ClaimsSpecialistPage: React.FC = () => {
       resetForm();
 
       const res = await fetch(
-        "http://localhost:3000/payroll-tracking/claims/for-specialist-review",
+        "http://localhost:5000/payroll-tracking/claims/for-specialist-review",
         { credentials: "include" }
       );
       const data = await res.json();
@@ -160,7 +162,7 @@ const ClaimsSpecialistPage: React.FC = () => {
       setProcessingId(claim._id);
 
       const response = await fetch(
-        `http://localhost:3000/payroll-tracking/claim/${claim._id}/specialist-reject`,
+        `http://localhost:5000/payroll-tracking/claim/${claim._id}/specialist-reject`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -179,7 +181,7 @@ const ClaimsSpecialistPage: React.FC = () => {
       resetForm();
 
       const res = await fetch(
-        "http://localhost:3000/payroll-tracking/claims/for-specialist-review",
+        "http://localhost:5000/payroll-tracking/claims/for-specialist-review",
         { credentials: "include" }
       );
       const data = await res.json();
@@ -265,9 +267,7 @@ const ClaimsSpecialistPage: React.FC = () => {
         {/* Error Message */}
         {error && (
           <div className="mb-6 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-lg">
-            <p className="text-yellow-700">
-              ⚠️ API Error: {error}
-            </p>
+            <p className="text-yellow-700">⚠️ API Error: {error}</p>
           </div>
         )}
 
@@ -280,7 +280,10 @@ const ClaimsSpecialistPage: React.FC = () => {
           <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-yellow-500">
             <p className="text-sm text-gray-600 mb-1">Pending Review</p>
             <p className="text-3xl font-bold text-yellow-600">
-              {claims.filter((c) => c.status.toUpperCase() === "PENDING").length}
+              {
+                claims.filter((c) => c.status.toUpperCase() === "PENDING")
+                  .length
+              }
             </p>
           </div>
           <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
@@ -466,8 +469,6 @@ const ClaimsSpecialistPage: React.FC = () => {
                     </div>
                   </div>
                 </div>
-
-              
 
                 <div className="mb-6">
                   <label className="block text-sm font-medium text-gray-700 mb-2">

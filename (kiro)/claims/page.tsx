@@ -41,7 +41,7 @@ const ClaimsPage: React.FC = () => {
     try {
       setLoading(true);
       // ensure authenticated (cookie-based)
-      const meRes = await fetch("http://localhost:3000/auth/me", {
+      const meRes = await fetch("http://localhost:5000/auth/me", {
         method: "GET",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -49,7 +49,7 @@ const ClaimsPage: React.FC = () => {
       if (!meRes.ok) throw new Error("Not authenticated");
 
       const res = await fetch(
-        "http://localhost:3000/payroll-tracking/my-claims",
+        "http://localhost:5000/payroll-tracking/my-claims",
         {
           method: "GET",
           headers: { "Content-Type": "application/json" },
@@ -106,7 +106,7 @@ const ClaimsPage: React.FC = () => {
     try {
       setSubmitLoading(true);
       const res = await fetch(
-        "http://localhost:3000/payroll-tracking/expense-claims",
+        "http://localhost:5000/payroll-tracking/expense-claims",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
