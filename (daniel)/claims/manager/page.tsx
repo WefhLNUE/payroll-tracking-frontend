@@ -12,12 +12,11 @@ import {
 
 interface Claim {
   _id: string;
-  claimId: string;  
-  employeeId:
-  {
-     _id: string;        
-     employeeNumber: string; 
-    };
+  claimId: string;
+  employeeId: {
+    _id: string;
+    employeeNumber: string;
+  };
   description: string;
   claimType: string;
   amount: number;
@@ -58,7 +57,9 @@ const ClaimsManagerPage: React.FC = () => {
   const [showRejectionModal, setShowRejectionModal] = useState(false);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<any | null>(null);
-  const [financeStaffValid, setFinanceStaffValid] = useState<boolean | null>(null);
+  const [financeStaffValid, setFinanceStaffValid] = useState<boolean | null>(
+    null
+  );
 
   // Form states
   const [approvalComments, setApprovalComments] = useState("");
@@ -68,22 +69,36 @@ const ClaimsManagerPage: React.FC = () => {
   useEffect(() => {
     (async () => {
       try {
-        const me = await fetch("http://localhost:3000/auth/me", { credentials: "include" });
-        if (!me.ok) { setError("Unauthorized"); setLoading(false); return; }
+        const me = await fetch("http://localhost:5000/auth/me", {
+          credentials: "include",
+        });
+        if (!me.ok) {
+          setError("Unauthorized");
+          setLoading(false);
+          return;
+        }
         const u = await me.json();
         setCurrentUser(u);
         if (!Array.isArray(u.roles) || !u.roles.includes("Payroll Manager")) {
-          setError("Forbidden: requires Payroll Manager role"); setLoading(false); return;
+          setError("Forbidden: requires Payroll Manager role");
+          setLoading(false);
+          return;
         }
 
         await fetchClaims(u.id);
-      } catch (e: any) { setError(e?.message || "Error fetching user"); setLoading(false); }
+      } catch (e: any) {
+        setError(e?.message || "Error fetching user");
+        setLoading(false);
+      }
     })();
   }, []);
 
   const fetchClaims = async (userId: string) => {
     try {
-      const res = await fetch("http://localhost:3000/payroll-tracking/claims/for-manager-approval", { credentials: "include" });
+      const res = await fetch(
+        "http://localhost:5000/payroll-tracking/claims/for-manager-approval",
+        { credentials: "include" }
+      );
       if (!res.ok) throw new Error("Failed to fetch claims");
       const data = await res.json();
       const arr = Array.isArray(data) ? data : data?.claims ?? [];
@@ -98,10 +113,9 @@ const ClaimsManagerPage: React.FC = () => {
   };
 
   const handleApprove = async (claim: Claim) => {
-
     try {
       setProcessingId(claim._id);
-      const endpoint = `http://localhost:3000/payroll-tracking/claim/${claim._id}/manager-confirm`;
+      const endpoint = `http://localhost:5000/payroll-tracking/claim/${claim._id}/manager-confirm`;
 
       const body = {
         comments: approvalComments,
@@ -140,7 +154,7 @@ const ClaimsManagerPage: React.FC = () => {
 
     try {
       setProcessingId(claim._id);
-      const endpoint = `http://localhost:3000/payroll-tracking/claim/${claim._id}/manager-reject`;
+      const endpoint = `http://localhost:5000/payroll-tracking/claim/${claim._id}/manager-reject`;
 
       const body = {
         rejectionReason: rejectionReason,
@@ -180,10 +194,19 @@ const ClaimsManagerPage: React.FC = () => {
   };
 
   const validateFinanceStaffId = (id: string) => {
-    if (!id) { setFinanceStaffValid(null); return; }
-    if (!currentUser) { setFinanceStaffValid(false); return; }
+    if (!id) {
+      setFinanceStaffValid(null);
+      return;
+    }
+    if (!currentUser) {
+      setFinanceStaffValid(false);
+      return;
+    }
     const roles: string[] = currentUser.roles ?? [];
-    if (!roles.includes('Finance Staff')) { setFinanceStaffValid(false); return; }
+    if (!roles.includes("Finance Staff")) {
+      setFinanceStaffValid(false);
+      return;
+    }
     setFinanceStaffValid(id === currentUser.id);
   };
 
@@ -259,9 +282,7 @@ const ClaimsManagerPage: React.FC = () => {
         {/* Error Message */}
         {error && (
           <div className="mb-6 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-lg">
-            <p className="text-yellow-700">
-              ⚠️ API Error: {error}
-            </p>
+            <p className="text-yellow-700">⚠️ API Error: {error}</p>
           </div>
         )}
 
@@ -274,7 +295,10 @@ const ClaimsManagerPage: React.FC = () => {
           <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-yellow-500">
             <p className="text-sm text-gray-600 mb-1">Pending Review</p>
             <p className="text-3xl font-bold text-yellow-600">
-              {claims.filter((c) => c.status.toUpperCase() === "PENDING").length}
+              {
+                claims.filter((c) => c.status.toUpperCase() === "PENDING")
+                  .length
+              }
             </p>
           </div>
           <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
@@ -462,8 +486,7 @@ const ClaimsManagerPage: React.FC = () => {
 
                 <div className="mb-6">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Finance Staff ID{" "}
-                    <span className="text-red-500">*</span>
+                    Finance Staff ID <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -474,10 +497,14 @@ const ClaimsManagerPage: React.FC = () => {
                     placeholder="Enter finance staff ID..."
                   />
                   {financeStaffValid === true && (
-                    <p className="mt-1 text-sm text-green-600">Finance Staff ID verified</p>
+                    <p className="mt-1 text-sm text-green-600">
+                      Finance Staff ID verified
+                    </p>
                   )}
                   {financeStaffValid === false && (
-                    <p className="mt-1 text-sm text-red-600">ID not valid or not a Finance Staff</p>
+                    <p className="mt-1 text-sm text-red-600">
+                      ID not valid or not a Finance Staff
+                    </p>
                   )}
                 </div>
 

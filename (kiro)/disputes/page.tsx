@@ -48,7 +48,7 @@ const DisputesPage: React.FC = () => {
 
   const fetchDisputes = async () => {
     try {
-      const meRes = await fetch("http://localhost:3000/auth/me", {
+      const meRes = await fetch("http://localhost:5000/auth/me", {
         method: "GET",
         headers: { "Content-Type": "application/json" },
         credentials: "include", // send HTTP-only cookie
@@ -63,7 +63,7 @@ const DisputesPage: React.FC = () => {
 
       // Fetch disputes - backend expects cookie-based auth, not Authorization header
       const response = await fetch(
-        "http://localhost:3000/payroll-tracking/my-disputes",
+        "http://localhost:5000/payroll-tracking/my-disputes",
         {
           method: "GET",
           headers: {
@@ -114,7 +114,7 @@ const DisputesPage: React.FC = () => {
   const fetchPayslips = async () => {
     try {
       const response = await fetch(
-        "http://localhost:3000/payroll-tracking/my-payslip",
+        "http://localhost:5000/payroll-tracking/my-payslip",
         {
           method: "GET",
           headers: {
@@ -166,7 +166,7 @@ const DisputesPage: React.FC = () => {
     try {
       setSubmitLoading(true);
       const response = await fetch(
-        "http://localhost:3000/payroll-tracking/disputes",
+        "http://localhost:5000/payroll-tracking/disputes",
         {
           method: "POST",
           headers: {
