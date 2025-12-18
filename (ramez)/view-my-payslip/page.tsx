@@ -169,7 +169,16 @@ export default function MyPayslipPage() {
 
   useEffect(() => {
     // Fetch logic as before
+
+    fetch("http://localhost:5000/auth/me", {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+    });
+
     fetch("http://localhost:5000/payroll-tracking/my-payslip", {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
       credentials: "include",
     })
       .then((res) => {
@@ -183,7 +192,10 @@ export default function MyPayslipPage() {
         }
         return res.json();
       })
-      .then((data) => setPayslip(data))
+      .then((data) => {
+        setPayslip(data);
+        console.log("data ", data);
+      })
       .catch((e) => setError(e.message || "Failed to fetch payslip"))
       .finally(() => setLoading(false));
   }, []);
@@ -360,7 +372,23 @@ export default function MyPayslipPage() {
     );
 
   // --- CALCULATIONS & DATA MAPPING ---
-  const { earningsDetails, deductionsDetails } = payslip;
+  // Provide safe defaults for nested objects to avoid runtime errors
+  // when the backend returns partial/undefined nested data.
+  const earningsDetails: EarningsDetails = payslip.earningsDetails ?? {
+    baseSalary: 0,
+    allowances: [],
+    bonuses: [],
+    benefits: [],
+    refunds: [],
+    _id: "",
+  };
+
+  const deductionsDetails: DeductionsDetails = payslip.deductionsDetails ?? {
+    taxes: [],
+    insurances: [],
+    penalties: { penalties: [] } as any,
+    _id: "",
+  };
 
   // 1. Calculate total Allowances: Use only 'approved' statuses for the total amount calculation
   const totalAllowances = earningsDetails.allowances

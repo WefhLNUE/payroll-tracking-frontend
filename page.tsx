@@ -32,7 +32,7 @@ export default function payrolltrackingPage() {
         {
           label: "Payslip",
           href: "/payroll-tracking/view-my-payslip",
-          description: "View your Contract",
+          description: "View your payslip",
         },
         {
           label: "Payslip history",
@@ -78,7 +78,7 @@ export default function payrolltrackingPage() {
         },
         {
           label: "paylip unpaid leave details",
-          href: "/payroll-tracking/payslip-misconduct-details",
+          href: "/payroll-tracking/payslip-unpaid-leave-details",
           description: "View payslip misconduct details",
         },
         {
@@ -143,7 +143,7 @@ export default function payrolltrackingPage() {
       items: [
         {
           label: "Finance Notfications",
-          href: "/payroll-tracking/finance-notfications",
+          href: "/payroll-tracking/finance-notifications",
           description: "Notfications 🔔",
         },
         {
