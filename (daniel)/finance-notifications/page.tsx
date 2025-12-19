@@ -296,7 +296,7 @@ const FinanceNotifications: React.FC = () => {
 
                     {n.type.includes("approved") && (
                       <Link
-                        href={`/refunds?type=${
+                        href={`/payroll-tracking/refunds?type=${
                           n.type === "dispute_approved" ? "dispute" : "claim"
                         }&recordId=${encodeURIComponent(n.recordId)}&amount=${
                           n.amount ?? ""
