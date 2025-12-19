@@ -81,11 +81,6 @@ export default function payrolltrackingPage() {
           href: "/payroll-tracking/payslip-unpaid-leave-details",
           description: "View payslip misconduct details",
         },
-        {
-          label: "Payslip Tax Details",
-          href: "/payroll-tracking/payslip-tax-details",
-          description: "View Tax Details",
-        },
       ],
     },
     {

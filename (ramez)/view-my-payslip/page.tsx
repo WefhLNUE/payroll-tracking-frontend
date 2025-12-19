@@ -16,6 +16,7 @@ import {
   CreditCard,
   Briefcase,
   ChevronRight,
+  ChevronLeft,
   Calendar,
   Calculator,
   AlertTriangle,
@@ -120,6 +121,8 @@ const DetailRow = ({
     return "bg-gray-200 text-gray-700";
   };
 
+  const safeValue = value ?? 0;
+
   return (
     <div
       className={`flex justify-between items-center py-2 ${
@@ -147,8 +150,8 @@ const DetailRow = ({
         )}
       </span>
       <span className={`${isTotal ? "text-xl font-extrabold" : ""}`}>
-        {value < 0 && "-"}$
-        {Math.abs(value).toLocaleString(undefined, {
+        {safeValue < 0 && "-"}$
+        {Math.abs(safeValue).toLocaleString(undefined, {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
         })}
@@ -167,18 +170,26 @@ export default function MyPayslipPage() {
 
   const router = useRouter();
 
+  // --- SAFETY DEFAULTS ---
+  const defaultEarnings: EarningsDetails = {
+    baseSalary: 0,
+    allowances: [],
+    bonuses: [],
+    benefits: [],
+    refunds: [],
+    _id: "",
+  };
+
+  const defaultDeductions: DeductionsDetails = {
+    taxes: [],
+    insurances: [],
+    penalties: { penalties: [] },
+    _id: "",
+  };
+
   useEffect(() => {
     // Fetch logic as before
-
-    fetch("http://localhost:5000/auth/me", {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-    });
-
     fetch("http://localhost:5000/payroll-tracking/my-payslip", {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
       credentials: "include",
     })
       .then((res) => {
@@ -193,8 +204,20 @@ export default function MyPayslipPage() {
         return res.json();
       })
       .then((data) => {
-        setPayslip(data);
-        console.log("data ", data);
+        if (data) {
+          // Merge with defaults to ensure safety
+          const mergedPayslip = {
+            ...data,
+            earningsDetails: { ...defaultEarnings, ...data.earningsDetails },
+            deductionsDetails: {
+              ...defaultDeductions,
+              ...data.deductionsDetails,
+            },
+          };
+          setPayslip(mergedPayslip);
+        } else {
+          setPayslip(null);
+        }
       })
       .catch((e) => setError(e.message || "Failed to fetch payslip"))
       .finally(() => setLoading(false));
@@ -276,7 +299,9 @@ export default function MyPayslipPage() {
       // const taxDetails: DetailedTaxDeduction = await response.json();
 
       // Navigate to the tax details page
-      router.push(`/payslip-tax-details?payslipId=${payslipId}`);
+      router.push(
+        `/payroll-tracking/payslip-tax-details?payslipId=${payslipId}`
+      );
     } catch (err) {
       console.error("Error fetching tax details:", err);
       if (err instanceof Error) {
@@ -294,35 +319,41 @@ export default function MyPayslipPage() {
     if (!payslip) return;
     const payslipId = payslip._id;
     // Redirect to a new page, passing the payslip ID or other relevant info
-    router.push(`/payslip-insurance-details?payslipId=${payslipId}`);
+    router.push(
+      `/payroll-tracking/payslip-insurance-details?payslipId=${payslipId}`
+    );
   };
 
   // --- HANDLER FOR CONTRACT DETAILS ---
   const handleViewContract = () => {
     // *** CORRECTED ROUTE TO MATCH SIMPLER FILE STRUCTURE ***
-    router.push("/contract-details");
+    router.push("/payroll-tracking/contract-details");
   };
 
   // --- HISTORY HANDLER ---
   const handleViewHistory = () => {
-    router.push("/payslip-history");
+    router.push("/payroll-tracking/payslip-history");
   };
 
   // --- HANDLER FOR UNUSED LEAVE COMPENSATION ---
   const handleViewLeaveCompensation = () => {
-    router.push("/unused-leave-compensation");
+    router.push("/payroll-tracking/unused-leave-compensation");
   };
 
   // --- NEW HANDLER FOR MISCONDUCT DETAILS ---
   const handleViewMisconductDetails = () => {
     if (!payslip) return;
-    router.push(`/payslip-misconduct-details?payslipId=${payslip._id}`);
+    router.push(
+      `/payroll-tracking/payslip-misconduct-details?payslipId=${payslip._id}`
+    );
   };
 
   // --- NEW HANDLER FOR UNPAID LEAVE DETAILS ---
   const handleViewUnpaidLeaveDetails = () => {
     if (!payslip) return;
-    router.push(`/payslip-unpaid-leave-details?payslipId=${payslip._id}`);
+    router.push(
+      `/payroll-tracking/payslip-unpaid-leave-details?payslipId=${payslip._id}`
+    );
   };
 
   // --- LOADING, ERROR, NO PAYSLIP STATES ---
@@ -372,57 +403,42 @@ export default function MyPayslipPage() {
     );
 
   // --- CALCULATIONS & DATA MAPPING ---
-  // Provide safe defaults for nested objects to avoid runtime errors
-  // when the backend returns partial/undefined nested data.
-  const earningsDetails: EarningsDetails = payslip.earningsDetails ?? {
-    baseSalary: 0,
-    allowances: [],
-    bonuses: [],
-    benefits: [],
-    refunds: [],
-    _id: "",
-  };
-
-  const deductionsDetails: DeductionsDetails = payslip.deductionsDetails ?? {
-    taxes: [],
-    insurances: [],
-    penalties: { penalties: [] } as any,
-    _id: "",
-  };
+  // Apply final safety catch for destructuring
+  const earningsDetails = payslip.earningsDetails ?? defaultEarnings;
+  const deductionsDetails = payslip.deductionsDetails ?? defaultDeductions;
 
   // 1. Calculate total Allowances: Use only 'approved' statuses for the total amount calculation
-  const totalAllowances = earningsDetails.allowances
-    .filter((a) => a.status?.toLowerCase() === "approved") // Filter applied for calculation
-    .reduce((sum, a) => sum + Number(a.amount), 0);
+  const totalAllowances = (earningsDetails.allowances ?? [])
+    .filter((a) => a?.status?.toLowerCase() === "approved") // Filter applied for calculation
+    .reduce((sum, a) => sum + Number(a?.amount ?? 0), 0);
 
-  const totalBonuses = earningsDetails.bonuses.reduce(
-    (s, b) => s + b.amount,
+  const totalBonuses = (earningsDetails.bonuses ?? []).reduce(
+    (s, b) => s + (b?.amount ?? 0),
     0
   );
-  const totalRefunds = earningsDetails.refunds.reduce(
-    (s, r) => s + r.amount,
+  const totalRefunds = (earningsDetails.refunds ?? []).reduce(
+    (s, r) => s + (r?.amount ?? 0),
     0
   );
-  const totalBenefits = earningsDetails.benefits.reduce(
-    (s, b) => s + b.amount,
+  const totalBenefits = (earningsDetails.benefits ?? []).reduce(
+    (s, b) => s + (b?.amount ?? 0),
     0
   );
 
   // 2. *** CRITICAL CORRECTION ***: Use the totalGrossSalary from the API response
-  const grossSalaryBase = payslip.totalGrossSalary;
+  const grossSalaryBase = payslip.totalGrossSalary ?? 0;
 
   // 3. Calculate Deduction Totals based on the Gross Salary base
-  const totalTaxes = deductionsDetails.taxes.reduce(
-    (s, t) => s + (grossSalaryBase * t.rate) / 100,
+  const totalTaxes = (deductionsDetails.taxes ?? []).reduce(
+    (s, t) => s + (grossSalaryBase * (t?.rate ?? 0)) / 100,
     0
   );
-  const totalEmployeeInsuranceDeduction = deductionsDetails.insurances.reduce(
-    (s, i) => s + (grossSalaryBase * i.employeeRate) / 100,
-    0
-  );
+  const totalEmployeeInsuranceDeduction = (
+    deductionsDetails.insurances ?? []
+  ).reduce((s, i) => s + (grossSalaryBase * (i?.employeeRate ?? 0)) / 100, 0);
   const totalPenalties =
     deductionsDetails.penalties?.penalties?.reduce(
-      (s: number, p: any) => s + p.amount,
+      (s: number, p: any) => s + (p?.amount ?? 0),
       0
     ) || 0;
 
@@ -435,11 +451,19 @@ export default function MyPayslipPage() {
       PAID: "bg-green-500 text-white",
       PENDING: "bg-yellow-500 text-gray-800",
       FAILED: "bg-red-500 text-white",
-    }[payslip.paymentStatus] || "bg-gray-500 text-white";
+    }[payslip.paymentStatus ?? "PENDING"] || "bg-gray-500 text-white";
 
   return (
     <div className="min-h-screen bg-gray-100 p-4 sm:p-8">
       <div className="max-w-7xl mx-auto space-y-8">
+        {/* BACK BUTTON */}
+        <button
+          onClick={() => router.back()}
+          className="flex items-center text-blue-600 hover:text-blue-800 transition font-medium mb-4"
+        >
+          <ChevronLeft className="w-5 h-5 mr-1" />
+          Back to Dashboard
+        </button>
         {/* HEADER & METADATA */}
         <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center py-5 px-8 bg-white rounded-xl shadow-lg border-l-4 border-blue-500">
           <div className="flex items-center">
@@ -450,28 +474,30 @@ export default function MyPayslipPage() {
               </h1>
               <p className="text-sm text-gray-500 mt-0.5">
                 Period:{" "}
-                {new Date(payslip.createdAt).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "long",
-                })}{" "}
-                | ID: {payslip.payrollRunId}
+                {payslip.createdAt
+                  ? new Date(payslip.createdAt).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                    })
+                  : "N/A"}{" "}
+                | ID: {payslip.payrollRunId ?? "N/A"}
               </p>
             </div>
           </div>
           <div
             className={`mt-4 sm:mt-0 px-4 py-1.5 text-sm font-bold rounded-full ${statusClasses}`}
           >
-            {payslip.paymentStatus}
+            {payslip.paymentStatus ?? "UNKNOWN"}
           </div>
         </header>
 
         {/* NET PAY FINAL BANNER */}
         <div
-          className="bg-linear-to-r from-gray-900 to-gray-700 text-white 
+          className="bg-gradient-to-r from-blue-800 to-indigo-900 text-white 
                       p-6 sm:p-8 rounded-xl shadow-2xl flex justify-between items-center 
-                      hover:from-gray-700 hover:to-gray-900 transition duration-300"
+                      hover:from-blue-900 hover:to-indigo-950 transition duration-300"
         >
-          <h2 className="text-xl sm:text-2xl font-extrabold text-gray-100 flex items-center tracking-wider">
+          <h2 className="text-xl sm:text-2xl font-extrabold text-white flex items-center tracking-wider">
             <div className="p-2 bg-green-500 rounded-full mr-4">
               <DollarSign className="w-6 h-6 text-white" />
             </div>
@@ -479,7 +505,7 @@ export default function MyPayslipPage() {
           </h2>
           <span className="text-4xl font-extrabold text-green-300">
             $
-            {payslip.netPay.toLocaleString(undefined, {
+            {(payslip.netPay ?? 0).toLocaleString(undefined, {
               minimumFractionDigits: 2,
             })}
           </span>
@@ -514,7 +540,7 @@ export default function MyPayslipPage() {
             <p className="text-sm font-medium text-gray-600">Base Salary</p>
             <p className="mt-1 text-2xl font-bold text-gray-900">
               $
-              {earningsDetails.baseSalary.toLocaleString(undefined, {
+              {(earningsDetails.baseSalary ?? 0).toLocaleString(undefined, {
                 minimumFractionDigits: 2,
               })}
             </p>
@@ -532,7 +558,7 @@ export default function MyPayslipPage() {
             </p>
             <p className="mt-1 text-2xl font-bold text-gray-900">
               $
-              {payslip.totaDeductions.toLocaleString(undefined, {
+              {(payslip.totaDeductions ?? 0).toLocaleString(undefined, {
                 minimumFractionDigits: 2,
               })}
             </p>
@@ -550,7 +576,7 @@ export default function MyPayslipPage() {
             </p>
             <p className="mt-1 text-2xl font-bold text-gray-900">
               $
-              {totalAllowances.toLocaleString(undefined, {
+              {(totalAllowances ?? 0).toLocaleString(undefined, {
                 minimumFractionDigits: 2,
               })}
             </p>
@@ -569,7 +595,7 @@ export default function MyPayslipPage() {
             <p className="text-sm font-medium opacity-80">Gross Salary</p>
             <p className="mt-1 text-2xl font-extrabold">
               $
-              {payslip.totalGrossSalary.toLocaleString(undefined, {
+              {(payslip.totalGrossSalary ?? 0).toLocaleString(undefined, {
                 minimumFractionDigits: 2,
               })}
             </p>
@@ -623,11 +649,11 @@ export default function MyPayslipPage() {
               />
 
               {/* Allowances Section - Display all, filter in total calculation */}
-              {earningsDetails.allowances.length > 0 && (
-                <div className="pt-2">
-                  <h3 className="font-semibold text-lg text-gray-800 mb-1">
-                    Allowances
-                  </h3>
+              <div className="pt-2">
+                <h3 className="font-semibold text-lg text-gray-800 mb-1">
+                  Allowances
+                </h3>
+                {(earningsDetails.allowances ?? []).length > 0 ? (
                   <div className="p-3 border border-gray-200 rounded-lg">
                     {earningsDetails.allowances.map((a) => (
                       <DetailRow
@@ -638,17 +664,21 @@ export default function MyPayslipPage() {
                       />
                     ))}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-500 italic">
+                    No allowances found.
+                  </div>
+                )}
+              </div>
 
               {/* Other Income Section - Display all, including status */}
-              {(totalBonuses > 0 || totalRefunds > 0 || totalBenefits > 0) && (
-                <div className="pt-2">
-                  <h3 className="font-semibold text-lg text-gray-800 mb-1">
-                    Other Income
-                  </h3>
+              <div className="pt-2">
+                <h3 className="font-semibold text-lg text-gray-800 mb-1">
+                  Other Income
+                </h3>
+                {totalBonuses > 0 || totalRefunds > 0 || totalBenefits > 0 ? (
                   <div className="p-3 border border-gray-200 rounded-lg">
-                    {earningsDetails.bonuses.map((b) => (
+                    {(earningsDetails.bonuses ?? []).map((b) => (
                       <DetailRow
                         key={b._id}
                         label={`Bonus: ${b.positionName || b.name}`}
@@ -656,7 +686,7 @@ export default function MyPayslipPage() {
                         statusLabel={b.status}
                       />
                     ))}
-                    {earningsDetails.refunds.map((r) => (
+                    {(earningsDetails.refunds ?? []).map((r) => (
                       <DetailRow
                         key={r._id}
                         label={`Refund: ${r.name}`}
@@ -664,7 +694,7 @@ export default function MyPayslipPage() {
                         statusLabel={r.status}
                       />
                     ))}
-                    {earningsDetails.benefits.map((b) => (
+                    {(earningsDetails.benefits ?? []).map((b) => (
                       <DetailRow
                         key={b._id}
                         label={`Benefit: ${b.name}`}
@@ -673,8 +703,12 @@ export default function MyPayslipPage() {
                       />
                     ))}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-500 italic">
+                    No other income recorded.
+                  </div>
+                )}
+              </div>
 
               <DetailRow
                 label="TOTAL GROSS EARNINGS"
@@ -693,79 +727,85 @@ export default function MyPayslipPage() {
 
             <div className="p-6 space-y-4">
               {/* Taxes */}
-              {deductionsDetails.taxes.length > 0 && (
-                <div className="pb-2">
-                  <div className="flex justify-between items-center mb-1">
-                    <h3 className="font-semibold text-lg text-gray-800">
-                      Taxes
-                    </h3>
-                    <button
-                      onClick={handleViewTaxDetails}
-                      disabled={isFetchingTaxDetails}
-                      className={`flex items-center text-sm font-medium p-1 rounded transition 
-                                text-blue-600 hover:bg-blue-50 hover:text-blue-800
-                                ${
-                                  isFetchingTaxDetails
-                                    ? "opacity-50 cursor-not-allowed"
-                                    : ""
-                                }`}
-                    >
-                      {isFetchingTaxDetails ? "Loading..." : "View Tax Details"}
-                      {!isFetchingTaxDetails && (
-                        <ChevronRight className="w-4 h-4 ml-1" />
-                      )}
-                    </button>
-                  </div>
+              <div className="pb-2">
+                <div className="flex justify-between items-center mb-1">
+                  <h3 className="font-semibold text-lg text-gray-800">Taxes</h3>
+                  <button
+                    onClick={handleViewTaxDetails}
+                    disabled={isFetchingTaxDetails}
+                    className={`flex items-center text-sm font-medium p-1 rounded transition 
+                              text-blue-600 hover:bg-blue-50 hover:text-blue-800
+                              ${
+                                isFetchingTaxDetails
+                                  ? "opacity-50 cursor-not-allowed"
+                                  : ""
+                              }`}
+                  >
+                    {isFetchingTaxDetails ? "Loading..." : "View Tax Details"}
+                    {!isFetchingTaxDetails && (
+                      <ChevronRight className="w-4 h-4 ml-1" />
+                    )}
+                  </button>
+                </div>
 
+                {(deductionsDetails.taxes ?? []).length > 0 ? (
                   <div className="p-3 border border-gray-200 rounded-lg">
                     {deductionsDetails.taxes.map((t) => (
                       <DetailRow
                         key={t._id}
                         label={`${t.name} (${t.rate}%)`}
-                        // *** CRITICAL CORRECTION: Use grossSalaryBase for rate calculation ***
-                        value={-((grossSalaryBase * t.rate) / 100)}
+                        value={-((grossSalaryBase * (t?.rate ?? 0)) / 100)}
                         isDeduction={true}
                         statusLabel={t.status}
                       />
                     ))}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-500 italic">
+                    No tax deductions available.
+                  </div>
+                )}
+              </div>
 
               {/* Insurances (WITH UPDATED STYLING) */}
-              {deductionsDetails.insurances.length > 0 && (
-                <div className="pt-2 pb-2">
-                  {/* Header Row: Insurance Title and Button */}
-                  <div className="flex justify-between items-center mb-1">
-                    <h3 className="font-semibold text-base text-gray-800 min-w-0 pr-2 whitespace-nowrap overflow-hidden truncate">
-                      Insurance Contributions (Employee Portion)
-                    </h3>
+              <div className="pt-2 pb-2">
+                {/* Header Row: Insurance Title and Button */}
+                <div className="flex justify-between items-center mb-1">
+                  <h3 className="font-semibold text-base text-gray-800 min-w-0 pr-2 whitespace-nowrap overflow-hidden truncate">
+                    Insurance Contributions (Employee Portion)
+                  </h3>
 
-                    {/* BUTTON: Remains consistent blue styling */}
-                    <button
-                      onClick={handleViewInsuranceDetails}
-                      className="flex items-center text-sm font-medium p-1 rounded transition 
-                                text-blue-600 hover:bg-blue-50 hover:text-blue-800 shrink-0"
-                    >
-                      View Insurance Details
-                      <ChevronRight className="w-4 h-4 ml-1" />
-                    </button>
-                  </div>
+                  {/* BUTTON: Remains consistent blue styling */}
+                  <button
+                    onClick={handleViewInsuranceDetails}
+                    className="flex items-center text-sm font-medium p-1 rounded transition 
+                              text-blue-600 hover:bg-blue-50 hover:text-blue-800 shrink-0"
+                  >
+                    View Insurance Details
+                    <ChevronRight className="w-4 h-4 ml-1" />
+                  </button>
+                </div>
 
+                {(deductionsDetails.insurances ?? []).length > 0 ? (
                   <div className="p-3 border border-gray-200 rounded-lg">
                     {deductionsDetails.insurances.map((i) => (
                       <DetailRow
                         key={i._id}
                         label={`${i.name} (${i.employeeRate}%)`}
-                        // *** CRITICAL CORRECTION: Use grossSalaryBase for rate calculation ***
-                        value={-((grossSalaryBase * i.employeeRate) / 100)}
+                        value={
+                          -((grossSalaryBase * (i?.employeeRate ?? 0)) / 100)
+                        }
                         isDeduction={true}
                         statusLabel={i.status}
                       />
                     ))}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-500 italic">
+                    No insurance contributions available.
+                  </div>
+                )}
+              </div>
 
               {/* Penalties Section with Redirect Button */}
               <div className="pt-2 pb-2">
@@ -797,14 +837,14 @@ export default function MyPayslipPage() {
                 </div>
 
                 {totalPenalties > 0 &&
-                deductionsDetails.penalties?.penalties?.length > 0 ? (
+                (deductionsDetails.penalties?.penalties ?? []).length > 0 ? (
                   <div className="p-3 border border-gray-200 rounded-lg">
                     {deductionsDetails.penalties.penalties.map(
                       (p: any, index: number) => (
                         <DetailRow
                           key={index}
-                          label={p.reason}
-                          value={-p.amount}
+                          label={p.reason || "Misconduct Penalty"}
+                          value={-(p?.amount ?? 0)}
                           isDeduction={true}
                         />
                       )
@@ -820,7 +860,7 @@ export default function MyPayslipPage() {
               {/* Total Deductions Line (Uses data.totaDeductions) */}
               <DetailRow
                 label="TOTAL DEDUCTIONS"
-                value={-payslip.totaDeductions}
+                value={-(payslip.totaDeductions ?? 0)}
                 isTotal={true}
                 isDeduction={true}
               />
