@@ -135,7 +135,7 @@ export default function PayslipHistoryPage() {
 
   useEffect(() => {
     // Fetching from the assumed correct history endpoint
-    fetch("http://localhost:5001/payroll-tracking/my-payslip-status", {
+    fetch("http://localhost:5000/payroll-tracking/my-payslip-status", {
       credentials: "include",
     })
       .then((res) => {
@@ -189,7 +189,7 @@ export default function PayslipHistoryPage() {
             className="mt-4 sm:mt-0 flex items-center px-4 py-2 bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition text-sm font-medium shadow-lg"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Current Payslip
+            Back to Dashboard
           </button>
         </header>
 

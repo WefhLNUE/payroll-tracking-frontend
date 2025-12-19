@@ -19,7 +19,7 @@ interface BaseSalaryAPIResponse {
 
 
 // --- API FETCH FUNCTION ---
-const API_BASE_URL = "http://localhost:5001/payroll-tracking/base-salary";
+const API_BASE_URL = "http://localhost:5000/payroll-tracking/base-salary";
 
 const fetchBaseSalaryData = async (): Promise<BaseSalaryAPIResponse> => {
     try {
@@ -142,7 +142,7 @@ if (!details.hasPayGrade) {
                         className="flex items-center text-blue-600 hover:text-blue-800 transition font-medium"
                     >
                         <ChevronLeft className="w-5 h-5 mr-1" />
-                        Back to Payslip
+                        Back to Dashboard
                     </button>
                     <div className="mt-4 flex items-center bg-white p-6 rounded-xl shadow-lg border-l-4 border-blue-600">
                         <FileText className="w-8 h-8 mr-4 text-blue-600" />

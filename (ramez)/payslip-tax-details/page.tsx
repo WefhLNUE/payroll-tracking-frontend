@@ -47,7 +47,7 @@ export default function PayslipTaxDetailsPage() {
     const fetchDetails = async () => {
       try {
         // --- FIX 1: URL construction changed to use path parameter ---
-        const url = `http://localhost:5001/payroll-tracking/tax-deduction/${payslipId}`;
+        const url = `http://localhost:5000/payroll-tracking/tax-deduction/${payslipId}`;
         // -----------------------------------------------------------
 
         const response = await fetch(url, { credentials: "include" });
@@ -114,7 +114,7 @@ export default function PayslipTaxDetailsPage() {
         className="mb-6 flex items-center text-blue-600 hover:text-blue-800 transition p-2 rounded-lg hover:bg-blue-100"
       >
         <ChevronLeft className="w-5 h-5 mr-1" />
-        Back to Payslip Summary
+        Back to Dashboard
       </button>
 
       <div className="bg-white shadow-2xl rounded-xl p-6 sm:p-8 border-t-4 border-red-500">

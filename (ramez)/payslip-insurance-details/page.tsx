@@ -175,7 +175,7 @@ export default function PayslipInsuranceDetailsPage() {
       try {
         // Using the actual fetch call as requested (no hardcoding/mocking)
         const response = await fetch(
-          "http://localhost:5001/payroll-tracking/insurance-deductions",
+          "http://localhost:5000/payroll-tracking/insurance-deductions",
           {
             method: "GET",
             credentials: "include",
@@ -272,7 +272,7 @@ export default function PayslipInsuranceDetailsPage() {
             onClick={() => window.history.back()}
             className="flex items-center text-sm text-blue-500 hover:text-blue-700 transition font-medium mb-3"
           >
-            <ArrowLeft className="w-4 h-4 mr-1" /> Back to Current Payslip
+            <ArrowLeft className="w-4 h-4 mr-1" /> Back to Dashboard
           </button>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center">
             <Shield className="w-8 h-8 mr-3 text-indigo-600" />
