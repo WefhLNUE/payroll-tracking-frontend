@@ -1,12 +1,40 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
-export default function payrolltrackingPage() {
+export default function PayrollTrackingPage() {
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [userRoles, setUserRoles] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const response = await fetch("http://localhost:5000/auth/me", {
+          credentials: "include",
+        });
+        const u = await response.json();
+
+        setCurrentUser(u);
+
+        // Ensure we handle the array correctly.
+        // If your API returns 'role' as an array, use that.
+        // If it's 'roles', use u.roles.
+        const rolesArray = Array.isArray(u.role) ? u.role : u.roles || [];
+        setUserRoles(rolesArray);
+      } catch (e: any) {
+        console.error("Failed to fetch user data:", e);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
   const modules = [
     {
       title: "Track your Compensations",
-      description: "Track your payments",
+      allowedRoles: ["department employee"],
       items: [
         {
           label: "Employee Claims",
@@ -25,9 +53,10 @@ export default function payrolltrackingPage() {
         },
       ],
     },
+
     {
       title: "Track your Payslips",
-      description: "Track your paid & unpaid payments",
+      allowedRoles: ["department employee"],
       items: [
         {
           label: "Payslip",
@@ -46,9 +75,10 @@ export default function payrolltrackingPage() {
         },
       ],
     },
+
     {
       title: "Salary Details",
-      description: "View Salary Details",
+      allowedRoles: ["department employee"],
       items: [
         {
           label: "Employee Contract",
@@ -67,9 +97,10 @@ export default function payrolltrackingPage() {
         },
       ],
     },
+
     {
       title: "Payslip Deductions",
-      description: "View Your Deductions",
+      allowedRoles: ["department employee"],
       items: [
         {
           label: "paylip misconduct details",
@@ -83,9 +114,10 @@ export default function payrolltrackingPage() {
         },
       ],
     },
+
     {
       title: "Manager Approval",
-      description: "Things that need a Manager Approval",
+      allowedRoles: ["Payroll Manager"],
       items: [
         {
           label: "Claims",
@@ -99,9 +131,10 @@ export default function payrolltrackingPage() {
         },
       ],
     },
+
     {
-      title: "Payroll Specialist Managment",
-      description: "Manage Payrolls",
+      title: "Payroll Specialist Management",
+      allowedRoles: ["Payroll Specialist"],
       items: [
         {
           label: "Claims",
@@ -113,28 +146,16 @@ export default function payrolltrackingPage() {
           href: "/payroll-tracking/disputes/specialist",
           description: "Manage Disputes",
         },
-      ],
-    },
-    {
-      title: "Reports",
-      description: "View Analytics",
-      items: [
         {
           label: "Department Payrolls",
           href: "/payroll-tracking/department-payrolls",
           description: "view Departments Payroll",
         },
-        {
-          label: "Payroll Runs",
-          href: "/payroll-tracking/payroll-runs",
-          description: "View Payroll Runs",
-        },
       ],
     },
-
     {
       title: "Finance Managment",
-      description: "Only Finance",
+      allowedRoles: ["Finance Staff"],
       items: [
         {
           label: "Finance Notfications",
@@ -147,6 +168,11 @@ export default function payrolltrackingPage() {
           description: "View Analytics",
         },
         {
+          label: "Payroll Runs",
+          href: "/payroll-tracking/payroll-runs",
+          description: "View Payroll Runs",
+        },
+        {
           label: "Refunds",
           href: "/payroll-tracking/refunds",
           description: "View & Manage Refunds",
@@ -155,23 +181,27 @@ export default function payrolltrackingPage() {
     },
   ];
 
+  // 1. FILTER LOGIC: Check if any of the user's roles are in the allowedRoles array
+  const filteredModules = modules.filter((module) =>
+    module.allowedRoles.some((role) => userRoles.includes(role))
+  );
+
+  if (loading)
+    return <div style={{ padding: "2rem" }}>Loading permissions...</div>;
+
   return (
     <div style={{ padding: "2rem", maxWidth: "1400px", margin: "0 auto" }}>
-      <div style={{ marginBottom: "3rem" }}>
+      <header style={{ marginBottom: "3rem" }}>
         <h1
           style={{
             fontSize: "2.5rem",
             fontWeight: "bold",
             color: "var(--payroll)",
-            marginBottom: "0.5rem",
           }}
         >
           Payroll Tracking Module
         </h1>
-        <p style={{ fontSize: "1.125rem", color: "var(--text-secondary)" }}>
-          Payroll Tracking & Managment
-        </p>
-      </div>
+      </header>
 
       <div
         style={{
@@ -180,36 +210,17 @@ export default function payrolltrackingPage() {
           gap: "2rem",
         }}
       >
-        {modules.map((module) => (
-          <div
-            key={module.title}
-            style={{
-              backgroundColor: "var(--bg-primary)",
-              border: "1px solid var(--border-color)",
-              borderRadius: "0.75rem",
-              padding: "1.5rem",
-              transition: "transform 0.2s, box-shadow 0.2s",
-            }}
-          >
+        {filteredModules.map((module) => (
+          <div key={module.title} style={cardStyle}>
             <h2
               style={{
                 fontSize: "1.5rem",
-                fontWeight: "600",
-                marginBottom: "0.5rem",
                 color: "var(--payroll)",
+                marginBottom: "1rem",
               }}
             >
               {module.title}
             </h2>
-            <p
-              style={{
-                color: "var(--text-secondary)",
-                marginBottom: "1.5rem",
-                fontSize: "0.875rem",
-              }}
-            >
-              {module.description}
-            </p>
             <div
               style={{
                 display: "flex",
@@ -218,41 +229,11 @@ export default function payrolltrackingPage() {
               }}
             >
               {module.items.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  style={{
-                    display: "block",
-                    padding: "1rem",
-                    backgroundColor: "var(--bg-secondary)",
-                    borderRadius: "0.5rem",
-                    textDecoration: "none",
-                    transition: "background-color 0.2s",
-                    border: "1px solid transparent",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor =
-                      "var(--bg-selected)";
-                    e.currentTarget.style.borderColor = "var(--payroll)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor =
-                      "var(--bg-secondary)";
-                    e.currentTarget.style.borderColor = "transparent";
-                  }}
-                >
+                <Link key={item.href} href={item.href} style={linkStyle}>
+                  <div style={{ fontWeight: "600" }}>{item.label}</div>
                   <div
                     style={{
-                      fontWeight: "600",
-                      color: "var(--text-primary)",
-                      marginBottom: "0.25rem",
-                    }}
-                  >
-                    {item.label}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: "0.8125rem",
+                      fontSize: "0.8rem",
                       color: "var(--text-secondary)",
                     }}
                   >
@@ -264,55 +245,24 @@ export default function payrolltrackingPage() {
           </div>
         ))}
       </div>
-
-      {/* Public Careers Page Link
-      <div
-        style={{
-          marginTop: "3rem",
-          padding: "2rem",
-          backgroundColor: "var(--payroll)",
-          borderRadius: "0.75rem",
-          textAlign: "center",
-        }}
-      >
-        <h2
-          style={{
-            fontSize: "1.5rem",
-            fontWeight: "600",
-            color: "white",
-            marginBottom: "0.5rem",
-          }}
-        >
-          Public Careers Page
-        </h2>
-        <p
-          style={{ color: "rgba(255, 255, 255, 0.9)", marginBottom: "1.5rem" }}
-        >
-          View your organization's public job board where candidates can browse
-          and apply for positions
-        </p>
-        <Link
-          href="/careers/jobs"
-          style={{
-            display: "inline-block",
-            padding: "0.75rem 2rem",
-            backgroundColor: "white",
-            color: "var(--payroll)",
-            borderRadius: "0.5rem",
-            textDecoration: "none",
-            fontWeight: "600",
-            transition: "transform 0.2s",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = "scale(1.05)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = "scale(1)";
-          }}
-        >
-          Visit Careers Page →
-        </Link>
-      </div> */}
     </div>
   );
 }
+
+// Styling (same as before)
+const cardStyle = {
+  backgroundColor: "var(--bg-primary)",
+  border: "1px solid var(--border-color)",
+  borderRadius: "0.75rem",
+  padding: "1.5rem",
+};
+
+const linkStyle = {
+  display: "block",
+  padding: "1rem",
+  backgroundColor: "var(--bg-secondary)",
+  borderRadius: "0.5rem",
+  textDecoration: "none",
+  color: "inherit",
+  transition: "all 0.2s",
+};

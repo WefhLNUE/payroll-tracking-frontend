@@ -22,7 +22,7 @@ interface Dispute {
 }
 
 interface Payslip {
-  payslipId: string;
+  _id: string;
   month: number;
   year: number;
   netPay: string;
@@ -94,18 +94,6 @@ const DisputesPage: React.FC = () => {
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
       // Fallback sample data
-      setDisputes([
-        {
-          disputeId: "1",
-          description: "Incorrect overtime calculation for November",
-          status: "PENDING",
-          rejectionReason: null,
-          resolutionComment: null,
-          payrollSpecialistId: null,
-          payrollManagerId: null,
-          financeStaffId: null,
-        },
-      ]);
     } finally {
       setLoading(false);
     }
@@ -114,7 +102,7 @@ const DisputesPage: React.FC = () => {
   const fetchPayslips = async () => {
     try {
       const response = await fetch(
-        "http://localhost:5000/payroll-tracking/my-payslip",
+        "http://localhost:5000/payroll-tracking/my-payslips",
         {
           method: "GET",
           headers: {
@@ -145,15 +133,6 @@ const DisputesPage: React.FC = () => {
     } catch (err) {
       console.error("Error fetching payslips:", err);
       // Fallback sample data
-      setPayslips([
-        {
-          payslipId: "691bb443b2c1cc410437babf",
-          month: 11,
-          year: 2025,
-          netPay: "$14200.00",
-          createdAt: "Tue Nov 18 2025",
-        },
-      ]);
     }
   };
 
@@ -293,9 +272,7 @@ const DisputesPage: React.FC = () => {
         {/* Error Message */}
         {error && (
           <div className="mb-6 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-lg">
-            <p className="text-yellow-700">
-              ⚠️ API Error: {error} (Showing sample data)
-            </p>
+            <p className="text-yellow-700">⚠️ API Error: {error}</p>
           </div>
         )}
 
@@ -455,7 +432,7 @@ const DisputesPage: React.FC = () => {
                   >
                     <option value="">Choose a payslip...</option>
                     {payslips.map((payslip) => (
-                      <option key={payslip.payslipId} value={payslip.payslipId}>
+                      <option key={payslip._id} value={payslip._id}>
                         {getMonthName(payslip.month)} {payslip.year} -{" "}
                         {payslip.netPay} ({payslip.createdAt})
                       </option>

@@ -144,9 +144,7 @@ const SalaryHistoryPage: React.FC = () => {
         {/* Error Message */}
         {error && (
           <div className="mb-6 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
-            <p className="text-yellow-700">
-              ⚠️ API Error: {error} (Showing sample data)
-            </p>
+            <p className="text-yellow-700">⚠️ API Error: {error}</p>
           </div>
         )}
 

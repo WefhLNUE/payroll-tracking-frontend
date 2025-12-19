@@ -73,6 +73,9 @@ export default function UnusedLeaveCompensationPage() {
       .then(setData)
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
+    if (data === null) {
+      setError("No data available");
+    }
   }, []);
 
   const formatCurrency = (amount: number) =>

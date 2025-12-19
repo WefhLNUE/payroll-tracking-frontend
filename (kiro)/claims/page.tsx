@@ -74,18 +74,6 @@ const ClaimsPage: React.FC = () => {
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
       // fallback sample
-      setClaims([
-        {
-          claimId: "CLAIM-0001",
-          description: "Travel expense for client visit",
-          claimType: "TRAVEL",
-          amount: 120.5,
-          approvedAmount: null,
-          status: "UNDER_REVIEW",
-          rejectionReason: null,
-          resolutionComment: null,
-        },
-      ]);
     } finally {
       setLoading(false);
     }
@@ -202,9 +190,7 @@ const ClaimsPage: React.FC = () => {
 
         {error && (
           <div className="mb-6 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-lg">
-            <p className="text-yellow-700">
-              ⚠️ API Error: {error} (showing sample data)
-            </p>
+            <p className="text-yellow-700">⚠️ API Error: {error}</p>
           </div>
         )}
 

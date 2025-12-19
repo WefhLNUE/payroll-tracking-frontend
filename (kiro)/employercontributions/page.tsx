@@ -113,22 +113,6 @@ const EmployerContributionsPage: React.FC = () => {
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
       // Fallback to sample data
-      setData({
-        baseSalary: 15000,
-        totalEmployerInsurance: 1500,
-        totalAllowances: 2000,
-        totalEmployerContributions: 3500,
-        insurance: [
-          { name: "Health Insurance", amount: 800 },
-          { name: "Life Insurance", amount: 400 },
-          { name: "Pension Fund", amount: 300 },
-        ],
-        allowances: [
-          { name: "Transportation", amount: 500 },
-          { name: "Housing", amount: 1000 },
-          { name: "Meal", amount: 500 },
-        ],
-      });
     } finally {
       setLoading(false);
     }
@@ -185,10 +169,13 @@ const EmployerContributionsPage: React.FC = () => {
                 ? "Pay Grade Not Assigned"
                 : "API Error"}
             </p>
-            <p className="text-yellow-600 text-sm">
+            <p className="text-yellow-600 text-sm mb-3">
               {error === "No pay grade assigned to employee"
                 ? "Your employee profile does not have a pay grade assigned. Please contact HR to assign a pay grade to your profile. Once assigned, your employer contributions will be displayed here."
-                : `${error} (Showing sample data)`}
+                : `${error} `}
+            </p>
+            <p className="text-yellow-600 text-xs bg-yellow-100 p-2 rounded">
+              <strong>Error Cause:</strong> {error}
             </p>
           </div>
         )}
@@ -216,18 +203,6 @@ const EmployerContributionsPage: React.FC = () => {
             <p className="text-sm text-gray-600 mb-1">Total Insurance</p>
             <p className="text-2xl font-bold text-gray-900">
               {formatCurrency(data.totalEmployerInsurance)}
-            </p>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-lg p-6 border-t-4 border-purple-500">
-            <div className="flex items-center justify-between mb-4">
-              <div className="bg-purple-100 p-3 rounded-lg">
-                <Gift className="w-6 h-6 text-purple-600" />
-              </div>
-            </div>
-            <p className="text-sm text-gray-600 mb-1">Total Allowances</p>
-            <p className="text-2xl font-bold text-gray-900">
-              {formatCurrency(data.totalAllowances)}
             </p>
           </div>
 
@@ -293,50 +268,6 @@ const EmployerContributionsPage: React.FC = () => {
               )}
             </div>
           </div>
-
-          {/* Allowances */}
-          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-            <div className="bg-gradient-to-r from-purple-500 to-purple-600 px-6 py-4">
-              <div className="flex items-center">
-                <Gift className="w-6 h-6 text-white mr-3" />
-                <h2 className="text-xl font-semibold text-white">Allowances</h2>
-              </div>
-            </div>
-            <div className="p-6">
-              {data.allowances.length > 0 ? (
-                <div className="space-y-4">
-                  {data.allowances.map((item, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                    >
-                      <div className="flex items-center">
-                        <div className="w-2 h-2 bg-purple-500 rounded-full mr-3"></div>
-                        <span className="text-sm font-medium text-gray-900">
-                          {item.name}
-                        </span>
-                      </div>
-                      <span className="text-lg font-bold text-purple-600">
-                        {formatCurrency(item.amount)}
-                      </span>
-                    </div>
-                  ))}
-                  <div className="pt-4 border-t-2 border-gray-200">
-                    <div className="flex items-center justify-between">
-                      <span className="text-base font-semibold text-gray-700">
-                        Total Allowances
-                      </span>
-                      <span className="text-xl font-bold text-purple-600">
-                        {formatCurrency(data.totalAllowances)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <p className="text-gray-500 text-center py-8">No allowances</p>
-              )}
-            </div>
-          </div>
         </div>
 
         {/* Breakdown Chart */}
@@ -378,25 +309,6 @@ const EmployerContributionsPage: React.FC = () => {
                     width: `${
                       (data.totalEmployerInsurance / data.baseSalary) * 100
                     }%`,
-                  }}
-                ></div>
-              </div>
-            </div>
-
-            <div>
-              <div className="flex justify-between mb-2">
-                <span className="text-sm font-medium text-gray-700">
-                  Allowances
-                </span>
-                <span className="text-sm font-semibold text-gray-900">
-                  {formatCurrency(data.totalAllowances)}
-                </span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-3">
-                <div
-                  className="bg-purple-500 h-3 rounded-full transition-all duration-500"
-                  style={{
-                    width: `${(data.totalAllowances / data.baseSalary) * 100}%`,
                   }}
                 ></div>
               </div>

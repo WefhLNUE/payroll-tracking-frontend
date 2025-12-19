@@ -486,30 +486,6 @@ const ClaimsManagerPage: React.FC = () => {
 
                 <div className="mb-6">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Finance Staff ID <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={financeStaffId}
-                    onChange={(e) => setFinanceStaffId(e.target.value)}
-                    onBlur={() => validateFinanceStaffId(financeStaffId)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900"
-                    placeholder="Enter finance staff ID..."
-                  />
-                  {financeStaffValid === true && (
-                    <p className="mt-1 text-sm text-green-600">
-                      Finance Staff ID verified
-                    </p>
-                  )}
-                  {financeStaffValid === false && (
-                    <p className="mt-1 text-sm text-red-600">
-                      ID not valid or not a Finance Staff
-                    </p>
-                  )}
-                </div>
-
-                <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Comments
                   </label>
                   <textarea

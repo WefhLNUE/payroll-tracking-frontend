@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Search,
   DollarSign,
@@ -10,14 +10,55 @@ import {
   CheckCircle,
   Clock,
   XCircle,
+  Lock,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function DepartmentPayslipsPage() {
+  const router = useRouter();
   const [departmentId, setDepartmentId] = useState("");
   const [payrollRunId, setPayrollRunId] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [data, setData] = useState(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [accessDenied, setAccessDenied] = useState(false);
+
+  // Check user role on component mount
+  useEffect(() => {
+    const checkAccess = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/auth/me", {
+          credentials: "include",
+        });
+
+        if (!response.ok) {
+          setAccessDenied(true);
+          return;
+        }
+
+        const userData = await response.json();
+
+        // roles is an array
+        const roles: string[] = userData.roles || [];
+
+        console.log("User Roles:", roles);
+
+        const hasFinanceAccess = roles.some((role) =>
+          role.includes("Payroll Specialist")
+        );
+
+        if (!hasFinanceAccess) {
+          setAccessDenied(true);
+        }
+      } catch (err) {
+        console.error("Failed to fetch user roles:", err);
+        setAccessDenied(true);
+      }
+    };
+
+    checkAccess();
+  }, []);
 
   const fetchPayslips = async () => {
     if (!departmentId || !payrollRunId) {
@@ -49,6 +90,7 @@ export default function DepartmentPayslipsPage() {
       }
 
       const result = await response.json();
+      console.log("Fetched payslips:", result);
       setData(result);
     } catch (err) {
       setError(err.message || "An error occurred while fetching payslips");
@@ -89,6 +131,34 @@ export default function DepartmentPayslipsPage() {
         return <AlertCircle className="w-4 h-4" />;
     }
   };
+
+  // Access Denied Screen
+  if (accessDenied) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center p-4">
+        <div className="text-center max-w-md">
+          <div className="bg-red-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Lock className="w-8 h-8 text-red-600" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            Access Denied
+          </h1>
+          <p className="text-gray-600 mb-2">
+            Only Finance team members can access this page.
+          </p>
+          <p className="text-gray-500 text-sm mb-6">
+            If you believe this is an error, please contact your administrator.
+          </p>
+          <button
+            onClick={() => router.back()}
+            className="bg-gray-900 text-white px-6 py-2 rounded-lg font-medium hover:bg-gray-800 transition-colors"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">

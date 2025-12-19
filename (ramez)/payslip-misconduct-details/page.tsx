@@ -12,6 +12,8 @@ import {
   ShieldAlert,
   RefreshCw,
   Search,
+  RotateCcw,
+  Wifi,
 } from "lucide-react";
 
 interface MisconductDeduction {
@@ -21,6 +23,11 @@ interface MisconductDeduction {
   potentialDeductionAmount?: number;
 }
 
+interface ErrorState {
+  message: string;
+  type: "network" | "server" | "validation" | "timeout" | "unknown";
+}
+
 function MisconductContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -28,7 +35,8 @@ function MisconductContent() {
 
   const [deductions, setDeductions] = useState<MisconductDeduction[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<ErrorState | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   // Track the range we are currently viewing
   const [viewingRange, setViewingRange] = useState({
@@ -37,10 +45,54 @@ function MisconductContent() {
     label: "",
   });
 
+  // Validate deduction data structure
+  const validateDeduction = (item: any): item is MisconductDeduction => {
+    return (
+      item &&
+      typeof item === "object" &&
+      (item.type === "Absenteeism" || item.type === "Lateness") &&
+      typeof item.date === "string" &&
+      typeof item.reason === "string" &&
+      (item.potentialDeductionAmount === undefined ||
+        typeof item.potentialDeductionAmount === "number")
+    );
+  };
+
+  // Handle fetch errors with proper typing
+  const handleFetchError = (err: any): ErrorState => {
+    console.error("Fetch error:", err);
+
+    if (err instanceof TypeError && err.message.includes("fetch")) {
+      return {
+        message: "Network error. Please check your connection.",
+        type: "network",
+      };
+    }
+
+    if (err.name === "AbortError") {
+      return {
+        message: "Request timed out. The server took too long to respond.",
+        type: "timeout",
+      };
+    }
+
+    if (err.message) {
+      return {
+        message: err.message,
+        type: err.message.includes("Server Error") ? "server" : "validation",
+      };
+    }
+
+    return {
+      message: "An unexpected error occurred. Please try again.",
+      type: "unknown",
+    };
+  };
+
   const fetchDeductions = useCallback(
     async (startDate: Date, endDate: Date) => {
       setLoading(true);
-      setError("");
+      setError(null);
 
       const startISO = startDate.toISOString();
       const endISO = endDate.toISOString();
@@ -54,24 +106,55 @@ function MisconductContent() {
         }),
       });
 
+      // Create abort controller for timeout
+      const abortController = new AbortController();
+      const timeoutId = setTimeout(() => abortController.abort(), 10000); // 10 second timeout
+
       try {
-        // Updated URL to match your @Get('misconduct-deductions')
         const url = `http://localhost:5000/payroll-tracking/misconduct-deductions?startDate=${startISO}&endDate=${endISO}`;
         console.log("Fetching from:", url);
 
-        const res = await fetch(url, { credentials: "include" });
+        const res = await fetch(url, {
+          credentials: "include",
+          signal: abortController.signal,
+        });
+
+        clearTimeout(timeoutId);
 
         if (!res.ok) {
-          const errorBody = await res.json().catch(() => ({}));
+          let errorBody;
+          try {
+            errorBody = await res.json();
+          } catch {
+            errorBody = { message: `Server Error: ${res.status}` };
+          }
           throw new Error(errorBody.message || `Server Error: ${res.status}`);
         }
 
         const data = await res.json();
-        console.log("API Response:", data);
-        setDeductions(data);
+
+        console.log("Fetched deductions:", data);
+
+        // Validate response data
+        if (!Array.isArray(data)) {
+          throw new Error("Invalid response format: expected array");
+        }
+
+        // Filter and validate deductions
+        const validDeductions = data.filter(validateDeduction);
+        if (validDeductions.length < data.length) {
+          console.warn(
+            `${
+              data.length - validDeductions.length
+            } invalid records were filtered out`
+          );
+        }
+
+        setDeductions(validDeductions);
       } catch (err: any) {
-        console.error("Fetch error:", err);
-        setError(err.message);
+        clearTimeout(timeoutId);
+        const errorState = handleFetchError(err);
+        setError(errorState);
       } finally {
         setLoading(false);
       }
@@ -87,7 +170,21 @@ function MisconductContent() {
           `http://localhost:5000/payroll-tracking/my-payslip`,
           { credentials: "include" }
         );
+
+        if (!payslipRes.ok) {
+          throw new Error(
+            `Failed to fetch payslip: ${payslipRes.status}. Using current month as fallback.`
+          );
+        }
+
         const payslipData = await payslipRes.json();
+
+        // Validate payslip data
+        if (!payslipData || !payslipData.createdAt) {
+          throw new Error(
+            "Invalid payslip data received. Using current month as fallback."
+          );
+        }
 
         // Set range based on when payslip was created
         const pDate = new Date(payslipData.createdAt);
@@ -109,7 +206,8 @@ function MisconductContent() {
         );
 
         fetchDeductions(start, end);
-      } catch (e) {
+      } catch (e: any) {
+        console.warn("Payslip fetch error, using fallback:", e.message);
         // Fallback to current month if payslip fetch fails
         const now = new Date();
         const start = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0);
@@ -132,6 +230,22 @@ function MisconductContent() {
     const start = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0);
     const end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
     fetchDeductions(start, end);
+  };
+
+  const handleRetry = () => {
+    setRetryCount((prev) => prev + 1);
+    tryCurrentMonth();
+  };
+
+  const getErrorIcon = (type: ErrorState["type"]) => {
+    switch (type) {
+      case "network":
+        return <Wifi className="w-6 h-6" />;
+      case "timeout":
+        return <Clock className="w-6 h-6" />;
+      default:
+        return <AlertCircle className="w-6 h-6" />;
+    }
   };
 
   if (loading)
@@ -186,9 +300,69 @@ function MisconductContent() {
         </div>
 
         {error ? (
-          <div className="bg-red-50 border border-red-200 p-6 rounded-2xl flex items-center gap-4 text-red-700">
-            <AlertCircle className="w-6 h-6 shrink-0" />
-            <p className="font-medium">API Connection Failed: {error}</p>
+          <div className="space-y-4">
+            <div className="bg-red-50 border-2 border-red-200 p-8 rounded-2xl">
+              <div className="flex items-start gap-4">
+                <div className="text-red-700 mt-1">
+                  {getErrorIcon(error.type)}
+                </div>
+                <div className="flex-1">
+                  <h2 className="font-bold text-red-900 text-lg mb-2">
+                    Unable to Load Deduction Details
+                  </h2>
+                  <p className="text-red-700 mb-4">{error.message}</p>
+                  <div className="bg-red-100 border border-red-300 rounded p-3 mb-4 text-sm text-red-800">
+                    <p className="font-semibold mb-1">Troubleshooting tips:</p>
+                    <ul className="list-disc list-inside space-y-1">
+                      {error.type === "network" && (
+                        <>
+                          <li>Check your internet connection</li>
+                          <li>Ensure the server is running on port 5000</li>
+                        </>
+                      )}
+                      {error.type === "timeout" && (
+                        <>
+                          <li>The server is responding slowly</li>
+                          <li>Try again in a moment</li>
+                        </>
+                      )}
+                      {error.type === "server" && (
+                        <>
+                          <li>The server encountered an error</li>
+                          <li>Contact support if the issue persists</li>
+                        </>
+                      )}
+                      <li>Try loading the current month</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-4 flex-wrap">
+              <button
+                onClick={handleRetry}
+                className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-all shadow-lg"
+              >
+                <RotateCcw className="w-4 h-4" />
+                Retry
+                {retryCount > 0 && ` (${retryCount})`}
+              </button>
+              <button
+                onClick={tryCurrentMonth}
+                className="flex items-center gap-2 bg-slate-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-slate-700 transition-all shadow-lg"
+              >
+                <Calendar className="w-4 h-4" />
+                Try Current Month
+              </button>
+              <button
+                onClick={() => router.back()}
+                className="flex items-center gap-2 bg-slate-200 text-slate-700 px-6 py-3 rounded-xl font-semibold hover:bg-slate-300 transition-all"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                Go Back
+              </button>
+            </div>
           </div>
         ) : deductions.length === 0 ? (
           <div className="bg-white rounded-3xl p-20 text-center border-2 border-dashed border-slate-200">
@@ -270,30 +444,6 @@ function MisconductContent() {
             ))}
 
             {/* Total Highlight */}
-            <div className="bg-slate-900 rounded-3xl p-8 text-white flex flex-col md:flex-row justify-between items-center gap-6 mt-12 shadow-2xl">
-              <div className="flex items-center gap-4">
-                <div className="bg-white/10 p-3 rounded-xl">
-                  <ArrowDownCircle className="w-6 h-6 text-red-400" />
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                    Aggregate Deduction
-                  </p>
-                  <p className="text-slate-300 text-sm">
-                    Calculated impact for {viewingRange.label}
-                  </p>
-                </div>
-              </div>
-              <div className="text-4xl font-black text-red-400">
-                -$
-                {deductions
-                  .reduce(
-                    (acc, curr) => acc + (curr.potentialDeductionAmount || 0),
-                    0
-                  )
-                  .toLocaleString(undefined, { minimumFractionDigits: 2 })}
-              </div>
-            </div>
           </div>
         )}
       </div>
@@ -305,8 +455,16 @@ export default function MisconductPage() {
   return (
     <Suspense
       fallback={
-        <div className="p-20 text-center text-slate-400 animate-pulse">
-          Loading Application Context...
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="text-center">
+            <RefreshCw className="w-10 h-10 text-blue-600 animate-spin mx-auto mb-4" />
+            <p className="text-gray-500 font-medium">
+              Loading Application Context...
+            </p>
+            <p className="text-gray-400 text-sm mt-2">
+              If this takes too long, please refresh the page
+            </p>
+          </div>
         </div>
       }
     >

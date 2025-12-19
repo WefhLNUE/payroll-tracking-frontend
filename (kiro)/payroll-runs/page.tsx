@@ -1,12 +1,15 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Calendar, ArrowRight } from "lucide-react";
+import { Lock } from "lucide-react";
 
 export default function PayrollRunsPage() {
   const router = useRouter();
   const [month, setMonth] = useState<string>("");
   const [year, setYear] = useState<string>("");
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [accessDenied, setAccessDenied] = useState(false);
   const [searchType, setSearchType] = useState<"month-year" | "year">(
     "month-year"
   );
@@ -28,6 +31,41 @@ export default function PayrollRunsPage() {
     "December",
   ];
 
+  useEffect(() => {
+    const checkAccess = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/auth/me", {
+          credentials: "include",
+        });
+
+        if (!response.ok) {
+          setAccessDenied(true);
+          return;
+        }
+
+        const userData = await response.json();
+
+        // roles is an array
+        const roles: string[] = userData.roles || [];
+
+        console.log("User Roles:", roles);
+
+        const hasFinanceAccess = roles.some((role) =>
+          role.toLowerCase().includes("finance")
+        );
+
+        if (!hasFinanceAccess) {
+          setAccessDenied(true);
+        }
+      } catch (err) {
+        console.error("Failed to fetch user roles:", err);
+        setAccessDenied(true);
+      }
+    };
+
+    checkAccess();
+  }, []);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -45,6 +83,33 @@ export default function PayrollRunsPage() {
       router.push(`/payroll-tracking/payroll-runs/year/${year}`);
     }
   };
+
+  if (accessDenied) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center p-4">
+        <div className="text-center max-w-md">
+          <div className="bg-red-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Lock className="w-8 h-8 text-red-600" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            Access Denied
+          </h1>
+          <p className="text-gray-600 mb-2">
+            Only Finance team members can access this page.
+          </p>
+          <p className="text-gray-500 text-sm mb-6">
+            If you believe this is an error, please contact your administrator.
+          </p>
+          <button
+            onClick={() => router.back()}
+            className="bg-gray-900 text-white px-6 py-2 rounded-lg font-medium hover:bg-gray-800 transition-colors"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4 sm:px-6 lg:px-8">

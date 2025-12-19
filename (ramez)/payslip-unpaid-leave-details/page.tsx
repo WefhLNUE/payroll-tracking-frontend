@@ -60,6 +60,7 @@ function UnpaidLeaveContent() {
 
       const result = await res.json();
       setData(result);
+      console.log("Unpaid leave data fetched:", result);
     } catch (err: any) {
       console.error("Fetch error:", err);
       setError(err.message || "An unexpected error occurred");
