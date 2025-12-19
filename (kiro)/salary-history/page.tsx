@@ -3,16 +3,28 @@ import React, { useState, useEffect } from "react";
 import { DollarSign, Calendar, TrendingUp } from "lucide-react";
 
 interface Payslip {
-  payslipId: string;
+  _id?: string;
+  payslipId?: string;
+  employeeId?: string;
   payrollRunId: string;
-  totalGrossSalary: string;
-  totalDeductions: string;
-  netPay: string;
+  earningsDetails?: {
+    baseSalary: number;
+    allowances?: Array<{ name: string; amount: number }>;
+    bonuses?: Array<{ name: string; amount: number }>;
+  };
+  deductionsDetails?: {
+    taxes?: Array<{ name: string; amount: number }>;
+    insurances?: Array<{ name: string; amount: number }>;
+    penalties?: { amount: number };
+  };
+  totalGrossSalary: number;
+  totaDeductions?: number;
+  netPay: number;
   paymentStatus: string;
-  month: number;
-  year: number;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
+  month?: number;
+  year?: number;
 }
 
 const SalaryHistoryPage: React.FC = () => {
@@ -43,37 +55,26 @@ const SalaryHistoryPage: React.FC = () => {
       }
 
       const data = await response.json();
-      setPayslips(data);
+      console.log("API Response:", data);
+
+      // Handle single payslip object from API
+      let payslipsData: Payslip[] = [];
+
+      if (Array.isArray(data)) {
+        payslipsData = data;
+      } else if (data && data.netPay !== undefined) {
+        // Single payslip object - wrap in array
+        payslipsData = [data];
+      } else if (data?.payslips && Array.isArray(data.payslips)) {
+        payslipsData = data.payslips;
+      }
+
+      console.log("Processed payslips:", payslipsData);
+      setPayslips(payslipsData);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
       // Fallback to sample data if API fails
-      setPayslips([
-        {
-          payslipId: "691bb443b2c1cc410437babf",
-          payrollRunId: "67463849a9cfe908bb3f3333",
-          totalGrossSalary: "$17000.00",
-          totalDeductions: "$3200.00",
-          netPay: "$14200.00",
-          paymentStatus: "PAID",
-          month: 11,
-          year: 2025,
-          createdAt: "Tue Nov 18 2025",
-          updatedAt: "Tue Nov 18 2025",
-        },
-        {
-          payslipId: "691bb443b2c1cc410437babk",
-          payrollRunId: "67463849a9cfe908bb3f3333",
-          totalGrossSalary: "$16500.00",
-          totalDeductions: "$2200.00",
-          netPay: "$10200.00",
-          paymentStatus: "PAID",
-          month: 10,
-          year: 2025,
-          createdAt: "Tue OCT 18 2025",
-          updatedAt: "Tue OCT 18 2025",
-        },
-      ]);
     } finally {
       setLoading(false);
     }
@@ -97,12 +98,19 @@ const SalaryHistoryPage: React.FC = () => {
     return months[month - 1] || "Unknown";
   };
 
-  const parseAmount = (amount: string): number => {
+  const parseAmount = (amount: string | number): number => {
+    if (typeof amount === "number") return amount;
     return parseFloat(amount.replace(/[$,]/g, ""));
   };
 
   const calculateTotalEarnings = (): string => {
-    const total = payslips.reduce((sum, p) => sum + parseAmount(p.netPay), 0);
+    if (!payslips || payslips.length === 0) {
+      return "$0.00";
+    }
+    const total = payslips.reduce(
+      (sum: number, p: Payslip) => sum + parseAmount(p.netPay),
+      0
+    );
     return `$${total.toLocaleString("en-US", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
@@ -220,44 +228,66 @@ const SalaryHistoryPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {payslips.map((payslip) => (
-                  <tr key={payslip.payslipId} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {getMonthName(payslip.month)} {payslip.year}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900 font-semibold">
-                        {payslip.totalGrossSalary}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-red-600">
-                        -{payslip.totalDeductions}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-green-600 font-bold">
-                        {payslip.netPay}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-3 py-1 inline-flex text-xs font-semibold rounded-full ${
-                          payslip.paymentStatus === "PAID"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-yellow-100 text-yellow-800"
-                        }`}
-                      >
-                        {payslip.paymentStatus}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {payslip.createdAt}
-                    </td>
-                  </tr>
-                ))}
+                {payslips.map((payslip) => {
+                  const date = payslip.createdAt
+                    ? new Date(payslip.createdAt).toLocaleDateString()
+                    : "N/A";
+                  const grossSalary =
+                    typeof payslip.totalGrossSalary === "number"
+                      ? `$${payslip.totalGrossSalary.toFixed(2)}`
+                      : payslip.totalGrossSalary;
+                  const deductions = payslip.totaDeductions
+                    ? typeof payslip.totaDeductions === "number"
+                      ? `$${payslip.totaDeductions.toFixed(2)}`
+                      : payslip.totaDeductions
+                    : "$0.00";
+                  const netPay =
+                    typeof payslip.netPay === "number"
+                      ? `$${payslip.netPay.toFixed(2)}`
+                      : payslip.netPay;
+
+                  return (
+                    <tr
+                      key={payslip._id || payslip.payslipId}
+                      className="hover:bg-gray-50"
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">
+                          {date}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900 font-semibold">
+                          {grossSalary}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-red-600">
+                          -{deductions}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-green-600 font-bold">
+                          {netPay}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`px-3 py-1 inline-flex text-xs font-semibold rounded-full ${
+                            payslip.paymentStatus === "PAID"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-yellow-100 text-yellow-800"
+                          }`}
+                        >
+                          {payslip.paymentStatus}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {date}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

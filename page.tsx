@@ -125,8 +125,8 @@ export default function payrolltrackingPage() {
           description: "view Departments Payroll",
         },
         {
-          label: "Payroll Runs (not finished)",
-          href: "/payroll-tracking/disputes/specialist",
+          label: "Payroll Runs",
+          href: "/payroll-tracking/payroll-runs",
           description: "View Payroll Runs",
         },
       ],
