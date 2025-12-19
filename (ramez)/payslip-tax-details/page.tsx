@@ -47,7 +47,7 @@ export default function PayslipTaxDetailsPage() {
     const fetchDetails = async () => {
       try {
         // --- FIX 1: URL construction changed to use path parameter ---
-        const url = `http://localhost:5000/payroll-tracking/tax-deduction/${payslipId}`;
+        const url = `http://localhost:5001/payroll-tracking/tax-deduction/${payslipId}`;
         // -----------------------------------------------------------
 
         const response = await fetch(url, { credentials: "include" });
@@ -163,29 +163,35 @@ export default function PayslipTaxDetailsPage() {
           <h2 className="text-2xl font-semibold text-gray-800 border-b pb-2">
             Individual Tax Breakdown
           </h2>
-          <ul className="space-y-4">
-            {taxDetails.taxes?.map((tax, index) => (
-              <li
-                // Since the tax items don't have an _id in the example, we use index for keying
-                key={tax.name + index}
-                className="flex flex-col sm:flex-row justify-between p-4 border border-gray-200 rounded-lg bg-white hover:shadow-md transition duration-150"
-              >
-                <div>
-                  <span className="font-bold text-lg text-gray-800">
-                    {tax.name} ({tax.rate}%)
+          {taxDetails.taxes && taxDetails.taxes.length > 0 ? (
+            <ul className="space-y-4">
+              {taxDetails.taxes.map((tax, index) => (
+                <li
+                  // Since the tax items don't have an _id in the example, we use index for keying
+                  key={tax.name + index}
+                  className="flex flex-col sm:flex-row justify-between p-4 border border-gray-200 rounded-lg bg-white hover:shadow-md transition duration-150"
+                >
+                  <div>
+                    <span className="font-bold text-lg text-gray-800">
+                      {tax.name} ({tax.rate}%)
+                    </span>
+                    {/* Using lawReference from the new structure */}
+                    <p className="text-sm text-gray-600">{tax.lawReference}</p>
+                  </div>
+                  <span className="font-extrabold text-xl text-red-700 mt-2 sm:mt-0">
+                    {/* Using amount provided directly by the backend */}- $
+                    {(tax.amount ?? 0).toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                    })}
                   </span>
-                  {/* Using lawReference from the new structure */}
-                  <p className="text-sm text-gray-600">{tax.lawReference}</p>
-                </div>
-                <span className="font-extrabold text-xl text-red-700 mt-2 sm:mt-0">
-                  {/* Using amount provided directly by the backend */}- $
-                  {(tax.amount ?? 0).toLocaleString(undefined, {
-                    minimumFractionDigits: 2,
-                  })}
-                </span>
-              </li>
-            ))}
-          </ul>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="p-4 border border-gray-200 rounded-lg bg-gray-50">
+              <p className="text-gray-600">No tax deductions found for this payslip.</p>
+            </div>
+          )}
         </div>
       </div>
     </div>

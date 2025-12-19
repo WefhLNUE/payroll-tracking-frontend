@@ -175,7 +175,7 @@ export default function PayslipInsuranceDetailsPage() {
       try {
         // Using the actual fetch call as requested (no hardcoding/mocking)
         const response = await fetch(
-          "http://localhost:5000/payroll-tracking/insurance-deductions",
+          "http://localhost:5001/payroll-tracking/insurance-deductions",
           {
             method: "GET",
             credentials: "include",

@@ -75,11 +75,19 @@ export default function UnusedLeaveCompensationPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const formatCurrency = (amount: number) =>
-    amount.toLocaleString("en-US", {
+  const formatCurrency = (amount?: number | null) => {
+    if (typeof amount !== "number" || isNaN(amount)) {
+      return "$0.00";
+    }
+  
+
+    
+    return amount.toLocaleString("en-US", {
       style: "currency",
       currency: "USD",
     });
+  };
+  
 
   if (loading)
     return (
@@ -109,6 +117,23 @@ export default function UnusedLeaveCompensationPage() {
       </div>
     );
 
+
+    if (!data.leaveBreakdown || data.leaveBreakdown.length === 0) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-100">
+          <div className="bg-white p-8 rounded-xl shadow-lg text-center max-w-md">
+            <AlertCircle className="w-10 h-10 text-amber-500 mx-auto mb-3" />
+            <p className="text-lg font-semibold text-gray-700">
+              No unused leave available for compensation
+            </p>
+            <p className="text-sm text-gray-500 mt-2">
+              You currently have no encashable leave balance.
+            </p>
+          </div>
+        </div>
+      );
+    }
+    
   return (
     <div className="min-h-screen bg-gray-100 p-4 sm:p-8">
       <div className="max-w-5xl mx-auto space-y-6">
@@ -177,7 +202,7 @@ export default function UnusedLeaveCompensationPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {data.leaveBreakdown.map((item, idx) => (
+              {(data.leaveBreakdown ?? []).map((item, idx) => (
                   <tr key={idx} className="hover:bg-gray-50 transition">
                     <td className="px-6 py-4">
                       <p className="font-semibold text-gray-800">

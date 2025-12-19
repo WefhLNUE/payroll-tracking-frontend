@@ -1,8 +1,39 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
+
+const employeeId = "69445635241e5695a7b620c8"; // your test employee
 
 export default function payrolltrackingPage() {
+  const [payslipId, setPayslipId] = useState<string | null>(null);
+  const [isLoadingPayslip, setIsLoadingPayslip] = useState(true);
+
+  // Fetch the latest payslip to get the payslipId for tax details
+  useEffect(() => {
+    const fetchLatestPayslip = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:5001/payroll-tracking/my-payslip",
+          { credentials: "include" }
+        );
+        if (response.ok) {
+          const payslip = await response.json();
+          if (payslip._id) {
+            setPayslipId(payslip._id);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching latest payslip:", error);
+        // Silently fail - the link will still work but without payslipId
+      } finally {
+        setIsLoadingPayslip(false);
+      }
+    };
+
+    fetchLatestPayslip();
+  }, []);
+
   const modules = [
     {
       title: "Track your Compensations",
@@ -78,12 +109,15 @@ export default function payrolltrackingPage() {
         },
         {
           label: "paylip unpaid leave details",
-          href: "/payroll-tracking/payslip-unpaid-leave-details",
-          description: "View payslip misconduct details",
-        },
+          href: `/payroll-tracking/payslip-unpaid-leave-details?employeeId=${employeeId}`,
+          description: "View unpaid leave details",
+        }
+        ,
         {
           label: "Payslip Tax Details",
-          href: "/payroll-tracking/payslip-tax-details",
+          href: payslipId
+            ? `/payroll-tracking/payslip-tax-details?payslipId=${payslipId}`
+            : "/payroll-tracking/payslip-tax-details",
           description: "View Tax Details",
         },
       ],

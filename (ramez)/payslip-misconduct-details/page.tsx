@@ -56,7 +56,7 @@ function MisconductContent() {
 
       try {
         // Updated URL to match your @Get('misconduct-deductions')
-        const url = `http://localhost:5000/payroll-tracking/misconduct-deductions?startDate=${startISO}&endDate=${endISO}`;
+        const url = `http://localhost:5001/payroll-tracking/misconduct-deductions?startDate=${startISO}&endDate=${endISO}`;
         console.log("Fetching from:", url);
 
         const res = await fetch(url, { credentials: "include" });
@@ -84,7 +84,7 @@ function MisconductContent() {
     const init = async () => {
       try {
         const payslipRes = await fetch(
-          `http://localhost:5000/payroll-tracking/my-payslip`,
+          `http://localhost:5001/payroll-tracking/my-payslip`,
           { credentials: "include" }
         );
         const payslipData = await payslipRes.json();
