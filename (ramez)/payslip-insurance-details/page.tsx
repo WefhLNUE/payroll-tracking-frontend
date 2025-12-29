@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from "next/navigation";
 import {
   Shield,
@@ -151,7 +151,7 @@ const InsuranceRow = ({
 );
 
 // --- 3. MAIN COMPONENT ---
-export default function PayslipInsuranceDetailsPage() {
+function PayslipInsuranceDetailsPageContent() {
   const [data, setData] = useState<InsuranceDeductionsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -371,4 +371,13 @@ export default function PayslipInsuranceDetailsPage() {
       </div>
     </div>
   );
+}
+
+// Wrapper component with Suspense boundary
+export default function PayslipInsuranceDetailsPage() {
+    return (
+        <Suspense fallback={<div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>Loading...</div>}>
+            <PayslipInsuranceDetailsPageContent />
+        </Suspense>
+    );
 }

@@ -8,6 +8,7 @@ import {
   X,
   FileText,
 } from "lucide-react";
+import { API_URL } from '@/lib/config';
 
 interface Dispute {
   _id: string;
@@ -66,7 +67,7 @@ const DisputesSpecialistPage: React.FC = () => {
   useEffect(() => {
     (async () => {
       try {
-        const me = await fetch("http://localhost:5000/auth/me", {
+        const me = await fetch(`${API_URL}/auth/me`, {
           credentials: "include",
         });
         if (!me.ok) {
@@ -97,7 +98,7 @@ const DisputesSpecialistPage: React.FC = () => {
   const fetchDisputes = async () => {
     try {
       const endpoint =
-        "http://localhost:5000/payroll-tracking/disputes/for-specialist-review";
+        `${API_URL}/payroll-tracking/disputes/for-specialist-review`;
       const response = await fetch(endpoint, { credentials: "include" });
       if (!response.ok) throw new Error("Failed to fetch disputes");
       const data = await response.json();

@@ -9,6 +9,7 @@ import {
   X,
   FileText,
 } from "lucide-react";
+import { API_URL } from '@/lib/config';
 
 interface Claim {
   _id: string;
@@ -69,7 +70,7 @@ const ClaimsManagerPage: React.FC = () => {
   useEffect(() => {
     (async () => {
       try {
-        const me = await fetch("http://localhost:5000/auth/me", {
+        const me = await fetch(`${API_URL}/auth/me`, {
           credentials: "include",
         });
         if (!me.ok) {
@@ -96,7 +97,7 @@ const ClaimsManagerPage: React.FC = () => {
   const fetchClaims = async (userId: string) => {
     try {
       const res = await fetch(
-        "http://localhost:5000/payroll-tracking/claims/for-manager-approval",
+        `${API_URL}/payroll-tracking/claims/for-manager-approval`,
         { credentials: "include" }
       );
       if (!res.ok) throw new Error("Failed to fetch claims");

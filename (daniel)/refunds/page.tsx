@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   CheckCircle,
@@ -11,6 +11,7 @@ import {
   FileText,
   Plus,
 } from "lucide-react";
+import { API_URL } from '@/lib/config';
 
 interface Refund {
   _id: string;
@@ -78,7 +79,7 @@ const getId = (value: any): string => {
   return "N/A";
 };
 
-const RefundsPage: React.FC = () => {
+const RefundsPageContent: React.FC = () => {
   const [refunds, setRefunds] = useState<Refund[]>([]);
   const [approvedRecords, setApprovedRecords] = useState<{
     disputes: any[];
@@ -108,7 +109,7 @@ const RefundsPage: React.FC = () => {
   useEffect(() => {
     (async () => {
       try {
-        const me = await fetch("http://localhost:5000/auth/me", {
+        const me = await fetch(`${API_URL}/auth/me`, {
           credentials: "include",
         });
         if (!me.ok) {
@@ -152,7 +153,7 @@ const RefundsPage: React.FC = () => {
   const fetchApprovedRecords = async () => {
     try {
       const res = await fetch(
-        "http://localhost:5000/payroll-tracking/finance/approved-records",
+        `${API_URL}/payroll-tracking/finance/approved-records`,
         { credentials: "include" }
       );
 
@@ -173,7 +174,7 @@ const RefundsPage: React.FC = () => {
       setLoading(true);
       setError(null);
       const response = await fetch(
-        "http://localhost:5000/payroll-tracking/refunds",
+        `${API_URL}/payroll-tracking/refunds`,
         { credentials: "include" }
       );
 
@@ -207,7 +208,7 @@ const RefundsPage: React.FC = () => {
     try {
       setProcessingId("create");
       const response = await fetch(
-        "http://localhost:5000/payroll-tracking/refund/create",
+        `${API_URL}/payroll-tracking/refund/create`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -250,7 +251,7 @@ const RefundsPage: React.FC = () => {
     try {
       setProcessingId(selectedRefund._id);
       const response = await fetch(
-        `http://localhost:5000/payroll-tracking/refund/${selectedRefund._id}/mark-paid`,
+        `${API_URL}/payroll-tracking/refund/${selectedRefund._id}/mark-paid`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -947,4 +948,11 @@ const RefundsPage: React.FC = () => {
   );
 };
 
-export default RefundsPage;
+// Wrapper component with Suspense boundary
+export default function RefundsPage() {
+  return (
+    <Suspense fallback={<div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>Loading...</div>}>
+      <RefundsPageContent />
+    </Suspense>
+  );
+}

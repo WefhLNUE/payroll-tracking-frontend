@@ -7,6 +7,7 @@ import {
   DollarSign,
   AlertCircle,
 } from "lucide-react";
+import { API_URL } from '@/lib/config';
 
 interface FinanceReport {
   totalTaxes: number;
@@ -27,7 +28,7 @@ const FinanceReportsPage: React.FC = () => {
   useEffect(() => {
     (async () => {
       try {
-        const me = await fetch("http://localhost:5000/auth/me", {
+        const me = await fetch(`${API_URL}/auth/me`, {
           credentials: "include",
         });
 
@@ -60,7 +61,7 @@ const FinanceReportsPage: React.FC = () => {
       setLoading(true);
       setError(null);
       const response = await fetch(
-        `http://localhost:5000/payroll-tracking/finance-report/${year}`
+        `${API_URL}/payroll-tracking/finance-report/${year}`
       );
 
       if (!response.ok) {

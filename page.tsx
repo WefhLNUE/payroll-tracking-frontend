@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { API_URL } from '@/lib/config';
 
 export default function PayrollTrackingPage() {
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -11,7 +12,7 @@ export default function PayrollTrackingPage() {
   useEffect(() => {
     (async () => {
       try {
-        const response = await fetch("http://localhost:5000/auth/me", {
+        const response = await fetch(`${API_URL}/auth/me`, {
           credentials: "include",
         });
         const u = await response.json();

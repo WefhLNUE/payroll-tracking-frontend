@@ -9,6 +9,7 @@ import {
   X,
   FileText,
 } from "lucide-react";
+import { API_URL } from '@/lib/config';
 
 /* =====================
    TYPES
@@ -65,7 +66,7 @@ const FinanceNotifications: React.FC = () => {
   useEffect(() => {
     (async () => {
       try {
-        const me = await fetch("http://localhost:5000/auth/me", {
+        const me = await fetch(`${API_URL}/auth/me`, {
           credentials: "include",
         });
         if (!me.ok) {
@@ -97,7 +98,7 @@ const FinanceNotifications: React.FC = () => {
       setLoading(true);
 
       const approvedRes = await fetch(
-        "http://localhost:5000/payroll-tracking/finance/approved-records",
+        `${API_URL}/payroll-tracking/finance/approved-records`,
         { credentials: "include" }
       );
 

@@ -2,7 +2,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from 'react';
 import {
   ChevronLeft,
   DollarSign,
@@ -28,7 +28,7 @@ interface DetailedTaxDeduction {
 }
 // ------------------------------------
 
-export default function PayslipTaxDetailsPage() {
+function PayslipTaxDetailsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const payslipId = searchParams.get("payslipId");
@@ -198,4 +198,13 @@ export default function PayslipTaxDetailsPage() {
       </div>
     </div>
   );
+}
+
+// Wrapper component with Suspense boundary
+export default function PayslipTaxDetailsPage() {
+    return (
+        <Suspense fallback={<div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>Loading...</div>}>
+            <PayslipTaxDetailsPageContent />
+        </Suspense>
+    );
 }
