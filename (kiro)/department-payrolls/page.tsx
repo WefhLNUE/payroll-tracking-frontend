@@ -20,7 +20,7 @@ export default function DepartmentPayslipsPage() {
   const [payrollRunId, setPayrollRunId] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [data, setData] = useState(null);
+  const [data, setData] = useState<any>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [accessDenied, setAccessDenied] = useState(false);
 
@@ -92,21 +92,21 @@ export default function DepartmentPayslipsPage() {
       const result = await response.json();
       console.log("Fetched payslips:", result);
       setData(result);
-    } catch (err) {
+    } catch (err: any) {
       setError(err.message || "An error occurred while fetching payslips");
     } finally {
       setLoading(false);
     }
   };
 
-  const formatCurrency = (amount) => {
+  const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
     }).format(amount);
   };
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
       case "paid":
         return "bg-green-100 text-green-800 border-green-200";
@@ -119,7 +119,7 @@ export default function DepartmentPayslipsPage() {
     }
   };
 
-  const getStatusIcon = (status) => {
+  const getStatusIcon = (status: string) => {
     switch (status?.toLowerCase()) {
       case "paid":
         return <CheckCircle className="w-4 h-4" />;
@@ -332,7 +332,7 @@ export default function DepartmentPayslipsPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {data.payslips.map((payslip, index) => (
+                  {data.payslips.map((payslip: any, index: number) => (
                     <tr key={index} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
