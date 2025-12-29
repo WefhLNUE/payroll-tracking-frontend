@@ -34,7 +34,7 @@ export default function PayrollRunsPage() {
   useEffect(() => {
     const checkAccess = async () => {
       try {
-        const response = await fetch("http://localhost:5000/auth/me", {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/auth/me`, {
           credentials: "include",
         });
 

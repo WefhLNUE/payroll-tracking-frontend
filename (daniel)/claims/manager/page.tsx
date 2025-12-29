@@ -116,7 +116,7 @@ const ClaimsManagerPage: React.FC = () => {
   const handleApprove = async (claim: Claim) => {
     try {
       setProcessingId(claim._id);
-      const endpoint = `http://localhost:5000/payroll-tracking/claim/${claim._id}/manager-confirm`;
+      const endpoint = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/payroll-tracking/claim/${claim._id}/manager-confirm`;
 
       const body = {
         comments: approvalComments,
@@ -155,7 +155,7 @@ const ClaimsManagerPage: React.FC = () => {
 
     try {
       setProcessingId(claim._id);
-      const endpoint = `http://localhost:5000/payroll-tracking/claim/${claim._id}/manager-reject`;
+      const endpoint = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/payroll-tracking/claim/${claim._id}/manager-reject`;
 
       const body = {
         rejectionReason: rejectionReason,

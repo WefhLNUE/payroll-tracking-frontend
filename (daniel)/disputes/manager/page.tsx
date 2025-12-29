@@ -117,7 +117,7 @@ const DisputesManagerPage: React.FC = () => {
       setProcessingId(dispute._id);
 
       const response = await fetch(
-        `http://localhost:5000/payroll-tracking/dispute/${dispute._id}/manager-confirm`,
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/payroll-tracking/dispute/${dispute._id}/manager-confirm`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -155,7 +155,7 @@ const DisputesManagerPage: React.FC = () => {
       setProcessingId(dispute._id);
 
       const response = await fetch(
-        `http://localhost:5000/payroll-tracking/dispute/${dispute._id}/manager-reject`,
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/payroll-tracking/dispute/${dispute._id}/manager-reject`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

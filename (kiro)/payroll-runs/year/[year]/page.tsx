@@ -25,7 +25,7 @@ export default function PayrollRunsByMonthPage() {
       try {
         const encodedYear = encodeURIComponent(year);
         const res = await fetch(
-          `http://localhost:5000/payroll-tracking/payroll-runs/year/${encodedYear}`,
+          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/payroll-tracking/payroll-runs/year/${encodedYear}`,
           { credentials: "include" }
         );
 

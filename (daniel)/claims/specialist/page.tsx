@@ -65,7 +65,7 @@ const ClaimsSpecialistPage: React.FC = () => {
   useEffect(() => {
     (async () => {
       try {
-        const me = await fetch("http://localhost:5000/auth/me", {
+        const me = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/auth/me`, {
           credentials: "include",
         });
 
@@ -88,7 +88,7 @@ const ClaimsSpecialistPage: React.FC = () => {
         }
 
         const res = await fetch(
-          "http://localhost:5000/payroll-tracking/claims/for-specialist-review",
+          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/payroll-tracking/claims/for-specialist-review`,
           { credentials: "include" }
         );
 
@@ -116,7 +116,7 @@ const ClaimsSpecialistPage: React.FC = () => {
       setProcessingId(claim._id);
 
       const response = await fetch(
-        `http://localhost:5000/payroll-tracking/claim/${claim._id}/specialist-approve`,
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/payroll-tracking/claim/${claim._id}/specialist-approve`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -137,7 +137,7 @@ const ClaimsSpecialistPage: React.FC = () => {
       resetForm();
 
       const res = await fetch(
-        "http://localhost:5000/payroll-tracking/claims/for-specialist-review",
+        "`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/payroll-tracking/claims/for-specialist-review`",
         { credentials: "include" }
       );
       const data = await res.json();
@@ -162,7 +162,7 @@ const ClaimsSpecialistPage: React.FC = () => {
       setProcessingId(claim._id);
 
       const response = await fetch(
-        `http://localhost:5000/payroll-tracking/claim/${claim._id}/specialist-reject`,
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/payroll-tracking/claim/${claim._id}/specialist-reject`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -181,7 +181,7 @@ const ClaimsSpecialistPage: React.FC = () => {
       resetForm();
 
       const res = await fetch(
-        "http://localhost:5000/payroll-tracking/claims/for-specialist-review",
+        "`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/payroll-tracking/claims/for-specialist-review`",
         { credentials: "include" }
       );
       const data = await res.json();

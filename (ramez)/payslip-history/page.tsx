@@ -135,7 +135,7 @@ export default function PayslipHistoryPage() {
 
   useEffect(() => {
     // Fetching from the assumed correct history endpoint
-    fetch("http://localhost:5000/payroll-tracking/my-payslip-status", {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/payroll-tracking/my-payslip-status`, {
       credentials: "include",
     })
       .then((res) => {

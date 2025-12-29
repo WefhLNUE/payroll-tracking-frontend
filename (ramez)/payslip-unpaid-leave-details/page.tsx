@@ -46,7 +46,7 @@ function UnpaidLeaveContent() {
     setError("");
     try {
       const res = await fetch(
-        `http://localhost:5000/payroll-tracking/unpaid-leave-deductions`,
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/payroll-tracking/unpaid-leave-deductions`,
         {
           credentials: "include",
         }

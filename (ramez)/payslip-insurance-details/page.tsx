@@ -175,7 +175,7 @@ function PayslipInsuranceDetailsPageContent() {
       try {
         // Using the actual fetch call as requested (no hardcoding/mocking)
         const response = await fetch(
-          "http://localhost:5000/payroll-tracking/insurance-deductions",
+          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/payroll-tracking/insurance-deductions`,
           {
             method: "GET",
             credentials: "include",

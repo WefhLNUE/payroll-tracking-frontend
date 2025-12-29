@@ -189,7 +189,7 @@ export default function MyPayslipPage() {
 
   useEffect(() => {
     // Fetch logic as before
-    fetch("http://localhost:5000/payroll-tracking/my-payslip", {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/payroll-tracking/my-payslip`, {
       credentials: "include",
     })
       .then((res) => {
@@ -230,7 +230,7 @@ export default function MyPayslipPage() {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/payroll-tracking/download-payslip",
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/payroll-tracking/download-payslip`,
         {
           method: "GET",
           credentials: "include",
@@ -278,7 +278,7 @@ export default function MyPayslipPage() {
       const payslipId = payslip._id;
       // In a real app, this API would return the detailed tax breakdown,
       // including the calculated taxable base.
-      const url = `http://localhost:5000/payroll-tracking/tax-deduction/${payslipId}`;
+      const url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/payroll-tracking/tax-deduction/${payslipId}`;
 
       const response = await fetch(url, {
         method: "GET",

@@ -111,7 +111,7 @@ function MisconductContent() {
       const timeoutId = setTimeout(() => abortController.abort(), 10000); // 10 second timeout
 
       try {
-        const url = `http://localhost:5000/payroll-tracking/misconduct-deductions?startDate=${startISO}&endDate=${endISO}`;
+        const url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/payroll-tracking/misconduct-deductions?startDate=${startISO}&endDate=${endISO}`;
         console.log("Fetching from:", url);
 
         const res = await fetch(url, {
@@ -167,7 +167,7 @@ function MisconductContent() {
     const init = async () => {
       try {
         const payslipRes = await fetch(
-          `http://localhost:5000/payroll-tracking/my-payslip`,
+          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/payroll-tracking/my-payslip`,
           { credentials: "include" }
         );
 

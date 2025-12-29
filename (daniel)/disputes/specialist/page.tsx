@@ -117,7 +117,7 @@ const DisputesSpecialistPage: React.FC = () => {
       setProcessingId(dispute._id);
 
       const response = await fetch(
-        `http://localhost:5000/payroll-tracking/dispute/${dispute._id}/specialist-approve`,
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/payroll-tracking/dispute/${dispute._id}/specialist-approve`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -154,7 +154,7 @@ const DisputesSpecialistPage: React.FC = () => {
       setProcessingId(dispute._id);
 
       const response = await fetch(
-        `http://localhost:5000/payroll-tracking/dispute/${dispute._id}/specialist-reject`,
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/payroll-tracking/dispute/${dispute._id}/specialist-reject`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

@@ -103,12 +103,12 @@ const FinanceNotifications: React.FC = () => {
       );
 
       const disputesRes = await fetch(
-        "http://localhost:5000/payroll-tracking/disputes/for-manager-approval",
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/payroll-tracking/disputes/for-manager-approval`,
         { credentials: "include" }
       );
 
       const claimsRes = await fetch(
-        "http://localhost:5000/payroll-tracking/claims/for-manager-approval",
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/payroll-tracking/claims/for-manager-approval`,
         { credentials: "include" }
       );
 

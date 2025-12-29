@@ -34,7 +34,7 @@ const EmployerContributionsPage: React.FC = () => {
     try {
       setLoading(true);
       const response = await fetch(
-        "http://localhost:5000/payroll-tracking/employer-contributions",
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/payroll-tracking/employer-contributions`,
         {
           method: "GET",
           headers: {

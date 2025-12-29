@@ -47,7 +47,7 @@ function PayslipTaxDetailsPageContent() {
     const fetchDetails = async () => {
       try {
         // --- FIX 1: URL construction changed to use path parameter ---
-        const url = `http://localhost:5000/payroll-tracking/tax-deduction/${payslipId}`;
+        const url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/payroll-tracking/tax-deduction/${payslipId}`;
         // -----------------------------------------------------------
 
         const response = await fetch(url, { credentials: "include" });

@@ -28,7 +28,7 @@ export default function DepartmentPayslipsPage() {
   useEffect(() => {
     const checkAccess = async () => {
       try {
-        const response = await fetch("http://localhost:5000/auth/me", {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/auth/me`, {
           credentials: "include",
         });
 
@@ -71,7 +71,7 @@ export default function DepartmentPayslipsPage() {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/payroll-tracking/payslips/bydepartment",
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/payroll-tracking/payslips/bydepartment`,
         {
           method: "POST",
           headers: {
