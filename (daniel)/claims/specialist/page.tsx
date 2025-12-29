@@ -137,7 +137,7 @@ const ClaimsSpecialistPage: React.FC = () => {
       resetForm();
 
       const res = await fetch(
-        "`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/payroll-tracking/claims/for-specialist-review`",
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/payroll-tracking/claims/for-specialist-review`,
         { credentials: "include" }
       );
       const data = await res.json();
@@ -181,7 +181,7 @@ const ClaimsSpecialistPage: React.FC = () => {
       resetForm();
 
       const res = await fetch(
-        "`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/payroll-tracking/claims/for-specialist-review`",
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/payroll-tracking/claims/for-specialist-review`,
         { credentials: "include" }
       );
       const data = await res.json();
